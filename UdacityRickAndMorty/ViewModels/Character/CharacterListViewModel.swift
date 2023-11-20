@@ -147,17 +147,28 @@ private extension CharacterListViewModel {
             delegate?.loadInitialCharacters()
         }
     }
-
     func updateCellViewModels() {
+        var updatedViewModels: [CharacterCollectionViewCellViewModel] = []
+
         for character in characters {
             let viewModel = CharacterCollectionViewCellViewModel(
                 characterName: character.name,
                 characterStatus: character.status,
                 characterImageUrl: URL(string: character.image)
             )
-            if !cellViewModels.contains(viewModel) {
-                cellViewModels.append(viewModel)
+
+            if let existingViewModel = cellViewModels.first(where: { $0 == viewModel }) {
+                // Update the existing viewModel with new data
+                existingViewModel.characterName = viewModel.characterName
+                existingViewModel.characterStatus = viewModel.characterStatus
+                existingViewModel.characterImageUrl = viewModel.characterImageUrl
+                updatedViewModels.append(existingViewModel)
+            } else {
+                // Add the new viewModel to the updatedViewModels array
+                updatedViewModels.append(viewModel)
             }
         }
+
+        cellViewModels = updatedViewModels
     }
 }

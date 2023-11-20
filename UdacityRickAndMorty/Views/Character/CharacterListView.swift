@@ -34,6 +34,15 @@ final class CharacterListView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        setUpUI()
+        setUpViewModel()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("Unsupported")
+    }
+
+    private func setUpUI() {
         translatesAutoresizingMaskIntoConstraints = false
         addSubviews(collectionView, loadingIndicator)
         addConstraints()

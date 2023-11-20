@@ -2,9 +2,9 @@ import Foundation
 
 final class CharacterCollectionViewCellViewModel: Hashable, Equatable {
     
-    let characterName: String
-    private let characterStatus: CharacterStatus
-    private let characterImageUrl: URL?
+    var characterName: String
+    var characterStatus: CharacterStatus
+    var characterImageUrl: URL?
     
     init(
         characterName: String,
