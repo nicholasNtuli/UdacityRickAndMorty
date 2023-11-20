@@ -41,7 +41,7 @@ final class EpisodeListViewModel: NSObject {
     }
     
     public func fetchEpisodes() {
-        Service.shared.execute(
+        APIService.shared.execute(
             .listEpisodesRequest,
             expecting: EpisodesResponse.self
         ) { [weak self] result in
@@ -65,12 +65,12 @@ final class EpisodeListViewModel: NSObject {
             return
         }
         isLoadingMoreCharacters = true
-        guard let request = Request(url: url) else {
+        guard let request = APIRequest(url: url) else {
             isLoadingMoreCharacters = false
             return
         }
         
-        Service.shared.execute(request, expecting: EpisodesResponse.self) { [weak self] result in
+        APIService.shared.execute(request, expecting: EpisodesResponse.self) { [weak self] result in
             guard let strongSelf = self else {
                 return
             }
@@ -115,7 +115,7 @@ extension EpisodeListViewModel: UICollectionViewDataSource, UICollectionViewDele
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifer,
+            withReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifier,
             for: indexPath
         ) as? CharacterEpisodeCollectionViewCell else {
             fatalError("Unsupported cell")

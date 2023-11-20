@@ -1,48 +1,69 @@
 import UIKit
 
-final class LocationViewController: UIViewController, LocationViewModelDelegate, LocationViewDelegate {
+final class LocationViewController: UIViewController {
 
-    private let primaryView = LocationView()
+    private let locationView = LocationView()
     private let viewModel = LocationViewModel()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        primaryView.delegate = self
-        view.addSubview(primaryView)
-        view.backgroundColor = .systemBackground
-        title = "Locations"
-        addSearchButton()
-        addConstraints()
-        viewModel.delegate = self
-        viewModel.fetchLocations()
+        configureUI()
+        configureViewModel()
     }
 
-    private func addSearchButton() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(tapSearch))
+    private func configureUI() {
+        view.backgroundColor = .systemBackground
+        title = "Locations"
+        addSubviews()
+        addConstraints()
+        addSearchButton()
+    }
+
+    private func addSubviews() {
+        locationView.delegate = self
+        view.addSubview(locationView)
     }
 
     private func addConstraints() {
         NSLayoutConstraint.activate([
-            primaryView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            primaryView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
-            primaryView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
-            primaryView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            locationView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            locationView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
+            locationView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
+            locationView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
     }
 
+    private func addSearchButton() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .search,
+            target: self,
+            action: #selector(tapSearch)
+        )
+    }
+
+    private func configureViewModel() {
+        viewModel.delegate = self
+        viewModel.fetchLocations()
+    }
+
     @objc private func tapSearch() {
-        let vc = SearchViewController(config: .init(type: .location))
-        vc.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(vc, animated: true)
+        let searchConfig = SearchViewController.Config(type: .location)
+        let searchVC = SearchViewController(config: searchConfig)
+        searchVC.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(searchVC, animated: true)
     }
-    
-    func locationView(_ locationView: LocationView, select location: Location) {
-        let vc = LocationDetailViewController(location: location)
-        vc.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(vc, animated: true)
-    }
-    
+}
+
+extension LocationViewController: LocationViewModelDelegate {
     func fetchInitialLocations() {
-        primaryView.configure(with: viewModel)
+        locationView.configure(with: viewModel)
+    }
+}
+
+extension LocationViewController: LocationViewDelegate {
+    func locationView(_ locationView: LocationView, select location: Location) {
+        let locationDetailVC = LocationDetailViewController(location: location)
+        locationDetailVC.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(locationDetailVC, animated: true)
     }
 }

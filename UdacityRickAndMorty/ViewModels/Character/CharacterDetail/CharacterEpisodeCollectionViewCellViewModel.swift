@@ -41,13 +41,13 @@ final class CharacterEpisodeCollectionViewCellViewModel: Hashable, Equatable {
         }
 
         guard let url = episodeDataUrl,
-              let request = Request(url: url) else {
+              let request = APIRequest(url: url) else {
             return
         }
 
         isFetching = true
 
-        Service.shared.execute(request, expecting: Episode.self) { [weak self] result in
+        APIService.shared.execute(request, expecting: Episode.self) { [weak self] result in
             switch result {
             case .success(let model):
                 DispatchQueue.main.async {

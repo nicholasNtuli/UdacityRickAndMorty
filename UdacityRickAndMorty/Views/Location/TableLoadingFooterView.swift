@@ -11,15 +11,17 @@ final class TableLoadingFooterView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-
-        addSubview(spinner)
-        spinner.startAnimating()
-
+        configureUI()
         addConstraints()
     }
 
     required init?(coder: NSCoder) {
-        fatalError()
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func configureUI() {
+        addSubview(spinner)
+        spinner.startAnimating()
     }
 
     private func addConstraints() {
@@ -28,7 +30,6 @@ final class TableLoadingFooterView: UIView {
             spinner.heightAnchor.constraint(equalToConstant: 55),
             spinner.centerXAnchor.constraint(equalTo: centerXAnchor),
             spinner.centerYAnchor.constraint(equalTo: centerYAnchor),
-
         ])
     }
 }

@@ -5,13 +5,14 @@ final class SearchOptionPickerViewController: UIViewController {
     private let option: SearchInputViewModel.DynamicOption
     private let selectionBlock: ((String) -> Void)
 
-    private let tableView: UITableView = {
+    private lazy var tableView: UITableView = {
         let table = UITableView()
         table.translatesAutoresizingMaskIntoConstraints = false
-        table.register(UITableViewCell.self,
-                       forCellReuseIdentifier: "cell")
+        table.register(UITableViewCell.self, forCellReuseIdentifier: Self.cellIdentifier)
         return table
     }()
+
+    private static let cellIdentifier = "cell"
     
     init(option: SearchInputViewModel.DynamicOption, selection: @escaping (String) -> Void) {
         self.option = option
@@ -26,10 +27,10 @@ final class SearchOptionPickerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        setUpTable()
+        setUpTableView()
     }
 
-    private func setUpTable() {
+    private func setUpTableView() {
         view.addSubview(tableView)
         tableView.delegate = self
         tableView.dataSource = self
@@ -50,7 +51,7 @@ extension SearchOptionPickerViewController: UITableViewDelegate, UITableViewData
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let choice = option.choices[indexPath.row]
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: Self.cellIdentifier, for: indexPath)
         cell.textLabel?.text = choice.uppercased()
         return cell
     }

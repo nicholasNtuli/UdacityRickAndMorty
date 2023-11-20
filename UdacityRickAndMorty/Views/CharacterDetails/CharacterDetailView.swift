@@ -3,10 +3,9 @@ import UIKit
 final class CharacterDetailView: UIView {
 
     public var collectionView: UICollectionView?
-
     private let viewModel: CharacterDetailViewModel
 
-    private let spinner: UIActivityIndicatorView = {
+    private let loadingIndicator: UIActivityIndicatorView = {
         let spinner = UIActivityIndicatorView(style: .large)
         spinner.hidesWhenStopped = true
         spinner.translatesAutoresizingMaskIntoConstraints = false
@@ -18,14 +17,18 @@ final class CharacterDetailView: UIView {
         super.init(frame: frame)
         translatesAutoresizingMaskIntoConstraints = false
         backgroundColor = .systemBackground
-        let collectionView = createCollectionView()
-        self.collectionView = collectionView
-        addSubviews(collectionView, spinner)
-        addConstraints()
+        setUpUI()
     }
 
     required init?(coder: NSCoder) {
         fatalError("Unsupported")
+    }
+
+    private func setUpUI() {
+        let collectionView = createCollectionView()
+        self.collectionView = collectionView
+        addSubviews(collectionView, loadingIndicator)
+        addConstraints()
     }
 
     private func addConstraints() {
@@ -34,10 +37,10 @@ final class CharacterDetailView: UIView {
         }
 
         NSLayoutConstraint.activate([
-            spinner.widthAnchor.constraint(equalToConstant: 100),
-            spinner.heightAnchor.constraint(equalToConstant: 100),
-            spinner.centerXAnchor.constraint(equalTo: centerXAnchor),
-            spinner.centerYAnchor.constraint(equalTo: centerYAnchor),
+            loadingIndicator.widthAnchor.constraint(equalToConstant: 100),
+            loadingIndicator.heightAnchor.constraint(equalToConstant: 100),
+            loadingIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
 
             collectionView.topAnchor.constraint(equalTo: topAnchor),
             collectionView.leftAnchor.constraint(equalTo: leftAnchor),
@@ -51,12 +54,13 @@ final class CharacterDetailView: UIView {
             return self.createSection(for: sectionIndex)
         }
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.register(CharacterPhotoCollectionViewCell.self,
-                                forCellWithReuseIdentifier: CharacterPhotoCollectionViewCell.cellIdentifer)
+                                forCellWithReuseIdentifier: CharacterPhotoCollectionViewCell.cellIdentifier)
         collectionView.register(CharacterInfoCollectionViewCell.self,
-                                forCellWithReuseIdentifier: CharacterInfoCollectionViewCell.cellIdentifer)
+                                forCellWithReuseIdentifier: CharacterInfoCollectionViewCell.cellIdentifier)
         collectionView.register(CharacterEpisodeCollectionViewCell.self,
-                                forCellWithReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifer)
+                                forCellWithReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifier)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }

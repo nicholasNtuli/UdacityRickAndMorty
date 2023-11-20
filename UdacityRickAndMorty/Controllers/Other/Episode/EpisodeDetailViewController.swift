@@ -3,31 +3,39 @@ import UIKit
 final class EpisodeDetailViewController: UIViewController, EpisodeDetailViewModelDelegate, EpisodeDetailViewDelegate {
 
     private let viewModel: EpisodeDetailViewModel
-    private let detailView = EpisodeDetailView()
-    
+    private lazy var detailView = EpisodeDetailView()
+
     init(url: URL?) {
         self.viewModel = EpisodeDetailViewModel(endpointUrl: url)
         super.init(nibName: nil, bundle: nil)
     }
 
     required init?(coder: NSCoder) {
-        fatalError()
+        fatalError("init(coder:) has not been implemented")
     }
-    
-    @objc
-    private func tapShare() {}
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
-        view.addSubview(detailView)
-        addConstraints()
-        detailView.delegate = self
-        title = "Episode"
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(tapShare))
-
+        setupUI()
         viewModel.delegate = self
         viewModel.fetchEpisodeData()
+    }
+
+    private func setupUI() {
+        view.backgroundColor = .systemBackground
+        setupDetailView()
+        title = "Episode"
+        setupNavigationBar()
+        addConstraints()
+    }
+
+    private func setupDetailView() {
+        view.addSubview(detailView)
+        detailView.delegate = self
+    }
+
+    private func setupNavigationBar() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(tapShare))
     }
 
     private func addConstraints() {
@@ -39,19 +47,18 @@ final class EpisodeDetailViewController: UIViewController, EpisodeDetailViewMode
         ])
     }
 
-    @objc
-    private func didTapShare() {}
+    @objc private func tapShare() {}
 
-    func episodeDetailView(
-        _ detailView: EpisodeDetailView,
-        select character: Character
-    ) {
-        let vc = CharacterDetailViewController(viewModel: .init(character: character))
-        vc.title = character.name
-        vc.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(vc, animated: true)
+    @objc private func didTapShare() {}
+
+    func episodeDetailView(_ detailView: EpisodeDetailView, select character: Character) {
+        let characterViewModel = CharacterDetailViewModel(character: character)
+        let characterDetailVC = CharacterDetailViewController(viewModel: characterViewModel)
+        characterDetailVC.title = character.name
+        characterDetailVC.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(characterDetailVC, animated: true)
     }
-    
+
     func fetchEpisodeDetails() {
         detailView.configure(with: viewModel)
     }

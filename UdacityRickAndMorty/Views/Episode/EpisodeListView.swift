@@ -12,11 +12,11 @@ final class EpisodeListView: UIView {
     public weak var delegate: EpisodeListViewDelegate?
     private let viewModel = EpisodeListViewModel()
 
-    private let spinner: UIActivityIndicatorView = {
-        let spinner = UIActivityIndicatorView(style: .large)
-        spinner.hidesWhenStopped = true
-        spinner.translatesAutoresizingMaskIntoConstraints = false
-        return spinner
+    private let loadingIndicator: UIActivityIndicatorView = {
+        let loadingIndicator = UIActivityIndicatorView(style: .large)
+        loadingIndicator.hidesWhenStopped = true
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        return loadingIndicator
     }()
 
     private let collectionView: UICollectionView = {
@@ -28,7 +28,7 @@ final class EpisodeListView: UIView {
         collectionView.alpha = 0
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.register(CharacterEpisodeCollectionViewCell.self,
-                                forCellWithReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifer)
+                                forCellWithReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifier)
         collectionView.register(FooterLoadingCollectionReusableView.self,
                                 forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
                                 withReuseIdentifier: FooterLoadingCollectionReusableView.identifier)
@@ -38,9 +38,9 @@ final class EpisodeListView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         translatesAutoresizingMaskIntoConstraints = false
-        addSubviews(collectionView, spinner)
+        addSubviews(collectionView, loadingIndicator)
         addConstraints()
-        spinner.startAnimating()
+        loadingIndicator.startAnimating()
         viewModel.delegate = self
         viewModel.fetchEpisodes()
         setUpCollectionView()
@@ -52,10 +52,10 @@ final class EpisodeListView: UIView {
 
     private func addConstraints() {
         NSLayoutConstraint.activate([
-            spinner.widthAnchor.constraint(equalToConstant: 100),
-            spinner.heightAnchor.constraint(equalToConstant: 100),
-            spinner.centerXAnchor.constraint(equalTo: centerXAnchor),
-            spinner.centerYAnchor.constraint(equalTo: centerYAnchor),
+            loadingIndicator.widthAnchor.constraint(equalToConstant: 100),
+            loadingIndicator.heightAnchor.constraint(equalToConstant: 100),
+            loadingIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
 
             collectionView.topAnchor.constraint(equalTo: topAnchor),
             collectionView.leftAnchor.constraint(equalTo: leftAnchor),
@@ -72,7 +72,7 @@ final class EpisodeListView: UIView {
 
 extension EpisodeListView: EpisodeListViewModelDelegate {
     func loadInitialEpisodes() {
-        spinner.stopAnimating()
+        loadingIndicator.stopAnimating()
         collectionView.isHidden = false
         collectionView.reloadData()
         UIView.animate(withDuration: 0.4) {

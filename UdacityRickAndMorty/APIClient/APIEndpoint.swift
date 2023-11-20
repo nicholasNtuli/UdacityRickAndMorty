@@ -1,5 +1,5 @@
 import Foundation
 
-@frozen enum Endpoint: String, CaseIterable, Hashable {
+@frozen enum APIEndpoint: String, CaseIterable, Hashable {
     case character, location, episode
 }

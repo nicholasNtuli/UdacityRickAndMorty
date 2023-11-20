@@ -2,7 +2,7 @@ import UIKit
 
 class CharacterEpisodeCollectionViewCell: UICollectionViewCell {
    
-    static let cellIdentifer = "CharacterEpisodeCollectionViewCell"
+    static let cellIdentifier = "CharacterEpisodeCollectionViewCell"
 
     private let seasonLabel: UILabel = {
         let label = UILabel()
@@ -70,7 +70,6 @@ class CharacterEpisodeCollectionViewCell: UICollectionViewCell {
 
     public func configure(with viewModel: CharacterEpisodeCollectionViewCellViewModel) {
         viewModel.registerForData { [weak self] data in
-            // Main Queue
             self?.nameLabel.text = data.name
             self?.seasonLabel.text = "Episode "+data.episode
             self?.airDateLabel.text = "Aired on "+data.air_date

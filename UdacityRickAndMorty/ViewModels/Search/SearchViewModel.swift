@@ -16,11 +16,11 @@ final class SearchViewModel {
     }
     
     public func registerSearchResultHandler(_ block: @escaping (SearchResultViewModel) -> Void) {
-        self.searchResultHandler = block
+        searchResultHandler = block
     }
     
     public func registerNoResultsHandler(_ block: @escaping () -> Void) {
-        self.noResultsHandler = block
+        noResultsHandler = block
     }
     
     public func executeSearch() {
@@ -28,20 +28,8 @@ final class SearchViewModel {
             return
         }
         
-        var queryParams: [URLQueryItem] = [
-            URLQueryItem(name: "name", value: searchText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed))
-        ]
-        
-        queryParams.append(contentsOf: optionMap.enumerated().compactMap({ _, element in
-            let key: SearchInputViewModel.DynamicOption = element.key
-            let value: String = element.value
-            return URLQueryItem(name: key.queryArgument, value: value)
-        }))
-        
-        let request = Request(
-            endpoint: config.type.endpoint,
-            queryParameters: queryParams
-        )
+        let queryParams = buildQueryParameters()
+        let request = APIRequest(endpoint: config.type.endpoint, queryParameters: queryParams)
         
         switch config.type.endpoint {
         case .character:
@@ -53,14 +41,27 @@ final class SearchViewModel {
         }
     }
     
-    private func makeSearchAPICall<T: Codable>(_ type: T.Type, request: Request) {
-        Service.shared.execute(request, expecting: type) { [weak self] result in
+    private func buildQueryParameters() -> [URLQueryItem] {
+        var queryParams: [URLQueryItem] = [
+            URLQueryItem(name: "name", value: searchText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed))
+        ]
+        
+        queryParams.append(contentsOf: optionMap.compactMap { element in
+            let key = element.key
+            let value = element.value
+            return URLQueryItem(name: key.queryArgument, value: value)
+        })
+        
+        return queryParams
+    }
+    
+    private func makeSearchAPICall<T: Codable>(_ type: T.Type, request: APIRequest) {
+        APIService.shared.execute(request, expecting: type) { [weak self] result in
             switch result {
             case .success(let model):
                 self?.processSearchResults(model: model)
             case .failure:
                 self?.handleNoResults()
-                break
             }
         }
     }
@@ -68,35 +69,39 @@ final class SearchViewModel {
     private func processSearchResults(model: Codable) {
         var resultsVM: SearchResultType?
         var nextUrl: String?
-        if let characterResults = model as? CharactersResponse {
-            resultsVM = .characters(characterResults.results.compactMap({
-                return CharacterCollectionViewCellViewModel(
+        
+        switch model {
+        case let characterResults as CharactersResponse:
+            resultsVM = .characters(characterResults.results.compactMap {
+                CharacterCollectionViewCellViewModel(
                     characterName: $0.name,
                     characterStatus: $0.status,
                     characterImageUrl: URL(string: $0.image)
                 )
-            }))
+            })
             nextUrl = characterResults.info.next
-        }
-        else if let episodesResults = model as? EpisodesResponse {
-            resultsVM = .episodes(episodesResults.results.compactMap({
-                return CharacterEpisodeCollectionViewCellViewModel(
+            
+        case let episodesResults as EpisodesResponse:
+            resultsVM = .episodes(episodesResults.results.compactMap {
+                CharacterEpisodeCollectionViewCellViewModel(
                     episodeDataUrl: URL(string: $0.url)
                 )
-            }))
+            })
             nextUrl = episodesResults.info.next
-        }
-        else if let locationsResults = model as? LocationsResponse {
-            resultsVM = .locations(locationsResults.results.compactMap({
-                return LocationTableViewCellViewModel(location: $0)
-            }))
+            
+        case let locationsResults as LocationsResponse:
+            resultsVM = .locations(locationsResults.results.compactMap {
+                LocationTableViewCellViewModel(location: $0)
+            })
             nextUrl = locationsResults.info.next
+        default:
+            print("Unexpected response model type")
         }
         
         if let results = resultsVM {
-            self.searchResultModel = model
+            searchResultModel = model
             let vm = SearchResultViewModel(results: results, next: nextUrl)
-            self.searchResultHandler?(vm)
+            searchResultHandler?(vm)
         } else {
             handleNoResults()
         }
@@ -107,7 +112,7 @@ final class SearchViewModel {
     }
     
     public func set(query text: String) {
-        self.searchText = text
+        searchText = text
     }
     
     public func set(value: String, for option: SearchInputViewModel.DynamicOption) {
@@ -119,27 +124,18 @@ final class SearchViewModel {
     public func registerOptionChangeBlock(
         _ block: @escaping ((SearchInputViewModel.DynamicOption, String)) -> Void
     ) {
-        self.optionMapUpdateBlock = block
+        optionMapUpdateBlock = block
     }
     
     public func locationSearchResult(at index: Int) -> Location? {
-        guard let searchModel = searchResultModel as? LocationsResponse else {
-            return nil
-        }
-        return searchModel.results[index]
+        (searchResultModel as? LocationsResponse)?.results[index]
     }
     
     public func characterSearchResult(at index: Int) -> Character? {
-        guard let searchModel = searchResultModel as? CharactersResponse else {
-            return nil
-        }
-        return searchModel.results[index]
+        (searchResultModel as? CharactersResponse)?.results[index]
     }
     
     public func episodeSearchResult(at index: Int) -> Episode? {
-        guard let searchModel = searchResultModel as? EpisodesResponse else {
-            return nil
-        }
-        return searchModel.results[index]
+        (searchResultModel as? EpisodesResponse)?.results[index]
     }
 }

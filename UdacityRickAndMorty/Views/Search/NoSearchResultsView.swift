@@ -22,18 +22,26 @@ final class NoSearchResultsView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        isHidden = true
-        translatesAutoresizingMaskIntoConstraints = false
-        addSubviews(iconView, label)
-        addConstraints()
+        configureView()
+        setupSubviews()
+        setupConstraints()
         configure()
     }
 
     required init?(coder: NSCoder) {
-        fatalError()
+        fatalError("init(coder:) has not been implemented")
     }
 
-    private func addConstraints() {
+    private func configureView() {
+        isHidden = true
+        translatesAutoresizingMaskIntoConstraints = false
+    }
+
+    private func setupSubviews() {
+        addSubviews(iconView, label)
+    }
+
+    private func setupConstraints() {
         NSLayoutConstraint.activate([
             iconView.widthAnchor.constraint(equalToConstant: 90),
             iconView.heightAnchor.constraint(equalToConstant: 90),

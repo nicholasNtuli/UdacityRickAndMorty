@@ -2,7 +2,7 @@ import UIKit
 
 final class CharacterPhotoCollectionViewCell: UICollectionViewCell {
     
-    static let cellIdentifer = "CharacterPhotoCollectionViewCell"
+    static let cellIdentifier = "CharacterPhotoCollectionViewCell"
 
     private let imageView: UIImageView = {
         let imageView = UIImageView()

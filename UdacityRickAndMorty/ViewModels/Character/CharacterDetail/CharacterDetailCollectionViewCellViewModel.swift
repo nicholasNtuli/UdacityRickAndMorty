@@ -2,7 +2,7 @@ import UIKit
 
 final class CharacterDetailCollectionViewCellViewModel {
     
-    private let type: `Type`
+    private let type: Type
     private let value: String
     
     static let dateFormatter: DateFormatter = {
@@ -20,90 +20,51 @@ final class CharacterDetailCollectionViewCellViewModel {
         return formatter
     }()
     
-    public var title: String {
-        type.displayTitle
+    var title: String {
+        return type.displayTitle
     }
     
-    public var displayValue: String {
-        if value.isEmpty { return "None" }
+    var displayValue: String {
+        guard !value.isEmpty else { return "None" }
         
-        if let date = Self.dateFormatter.date(from: value),
-           type == .created {
+        if let date = Self.dateFormatter.date(from: value), type == .created {
             return Self.shortDateFormatter.string(from: date)
         }
         
         return value
     }
     
-    public var iconImage: UIImage? {
+    var iconImage: UIImage? {
         return type.iconImage
     }
     
-    public var tintColor: UIColor {
+    var tintColor: UIColor {
         return type.tintColor
     }
     
     enum `Type`: String {
-        case status
-        case gender
-        case type
-        case species
-        case origin
-        case created
-        case location
-        case episodeCount
+        case status, gender, type, species, origin, created, location, episodeCount
         
         var tintColor: UIColor {
             switch self {
-            case .status:
-                return .systemBlue
-            case .gender:
-                return .systemRed
-            case .type:
-                return .systemPurple
-            case .species:
-                return .systemGreen
-            case .origin:
-                return .systemOrange
-            case .created:
-                return .systemPink
-            case .location:
-                return .systemYellow
-            case .episodeCount:
-                return .systemMint
+            case .status: return .systemBlue
+            case .gender: return .systemRed
+            case .type: return .systemPurple
+            case .species: return .systemGreen
+            case .origin: return .systemOrange
+            case .created: return .systemPink
+            case .location: return .systemYellow
+            case .episodeCount: return .systemMint
             }
         }
         
         var iconImage: UIImage? {
-            switch self {
-            case .status:
-                return UIImage(systemName: "bell")
-            case .gender:
-                return UIImage(systemName: "bell")
-            case .type:
-                return UIImage(systemName: "bell")
-            case .species:
-                return UIImage(systemName: "bell")
-            case .origin:
-                return UIImage(systemName: "bell")
-            case .created:
-                return UIImage(systemName: "bell")
-            case .location:
-                return UIImage(systemName: "bell")
-            case .episodeCount:
-                return UIImage(systemName: "bell")
-            }
+            return UIImage(systemName: "bell")
         }
         
         var displayTitle: String {
             switch self {
-            case .status,
-                    .gender,
-                    .type,
-                    .species,
-                    .origin,
-                    .created,
-                    .location:
+            case .status, .gender, .type, .species, .origin, .created, .location:
                 return rawValue.uppercased()
             case .episodeCount:
                 return "EPISODE COUNT"
@@ -111,7 +72,7 @@ final class CharacterDetailCollectionViewCellViewModel {
         }
     }
     
-    init(type: `Type`, value: String) {
+    init(type: Type, value: String) {
         self.value = value
         self.type = type
     }

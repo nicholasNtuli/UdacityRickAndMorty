@@ -1,7 +1,6 @@
 import UIKit
 
 protocol SearchInputViewDelegate: AnyObject {
-    
     func searchInputView(_ inputView: SearchInputView, selectOption option: SearchInputViewModel.DynamicOption)
     func searchInputView(_ inputView: SearchInputView, changeSearchText text: String)
     func searchInputViewDidTapSearchKeyboardButton(_ inputView: SearchInputView)
@@ -31,24 +30,35 @@ final class SearchInputView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        translatesAutoresizingMaskIntoConstraints = false
-        addSubviews(searchBar)
-        addConstraints()
-        
-        searchBar.delegate = self
+        configureView()
+        setupSubviews()
+        setupConstraints()
+        configureSearchBar()
     }
     
     required init?(coder: NSCoder) {
-        fatalError()
+        fatalError("init(coder:) has not been implemented")
     }
     
-    private func addConstraints() {
+    private func configureView() {
+        translatesAutoresizingMaskIntoConstraints = false
+    }
+    
+    private func setupSubviews() {
+        addSubviews(searchBar)
+    }
+    
+    private func setupConstraints() {
         NSLayoutConstraint.activate([
             searchBar.topAnchor.constraint(equalTo: topAnchor),
             searchBar.leftAnchor.constraint(equalTo: leftAnchor),
             searchBar.rightAnchor.constraint(equalTo: rightAnchor),
             searchBar.heightAnchor.constraint(equalToConstant: 58)
         ])
+    }
+    
+    private func configureSearchBar() {
+        searchBar.delegate = self
     }
     
     private func createOptionStackView() -> UIStackView {
@@ -73,17 +83,13 @@ final class SearchInputView: UIView {
     private func createOptionSelectionViews(options: [SearchInputViewModel.DynamicOption]) {
         let stackView = createOptionStackView()
         self.stackView = stackView
-        for x in 0..<options.count {
-            let option = options[x]
-            let button = createButton(with: option, tag: x)
+        for (index, option) in options.enumerated() {
+            let button = createButton(with: option, tag: index)
             stackView.addArrangedSubview(button)
         }
     }
     
-    private func createButton(
-        with option: SearchInputViewModel.DynamicOption,
-        tag: Int
-    ) -> UIButton {
+    private func createButton(with option: SearchInputViewModel.DynamicOption, tag: Int) -> UIButton {
         let button = UIButton()
         button.setAttributedTitle(
             NSAttributedString(
@@ -122,10 +128,7 @@ final class SearchInputView: UIView {
         searchBar.becomeFirstResponder()
     }
     
-    public func update(
-        option: SearchInputViewModel.DynamicOption,
-        value: String
-    ) {
+    public func update(option: SearchInputViewModel.DynamicOption, value: String) {
         guard let buttons = stackView?.arrangedSubviews as? [UIButton],
               let allOptions = viewModel?.options,
               let index = allOptions.firstIndex(of: option) else {

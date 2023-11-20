@@ -7,42 +7,32 @@ final class TabBarController: UITabBarController {
         setUpTabs()
     }
 
+    private struct TabInfo {
+        let title: String
+        let image: UIImage?
+        let viewController: UIViewController
+    }
+
     private func setUpTabs() {
         let charactersVC = CharacterViewController()
         let locationsVC = LocationViewController()
         let episodesVC = EpisodeViewController()
-        let settingsVC = SettingsViewController()
 
-        charactersVC.navigationItem.largeTitleDisplayMode = .automatic
-        locationsVC.navigationItem.largeTitleDisplayMode = .automatic
-        episodesVC.navigationItem.largeTitleDisplayMode = .automatic
-        settingsVC.navigationItem.largeTitleDisplayMode = .automatic
+        let tabs: [TabInfo] = [
+            TabInfo(title: "Characters", image: UIImage(systemName: "person"), viewController: charactersVC),
+            TabInfo(title: "Locations", image: UIImage(systemName: "globe"), viewController: locationsVC),
+            TabInfo(title: "Episodes", image: UIImage(systemName: "tv"), viewController: episodesVC)
+        ]
 
-        let nav1 = UINavigationController(rootViewController: charactersVC)
-        let nav2 = UINavigationController(rootViewController: locationsVC)
-        let nav3 = UINavigationController(rootViewController: episodesVC)
-        let nav4 = UINavigationController(rootViewController: settingsVC)
-
-        nav1.tabBarItem = UITabBarItem(title: "Characters",
-                                       image: UIImage(systemName: "person"),
-                                       tag: 1)
-        nav2.tabBarItem = UITabBarItem(title: "Locations",
-                                       image: UIImage(systemName: "globe"),
-                                       tag: 2)
-        nav3.tabBarItem = UITabBarItem(title: "Episodes",
-                                       image: UIImage(systemName: "tv"),
-                                       tag: 3)
-        nav4.tabBarItem = UITabBarItem(title: "Settings",
-                                       image: UIImage(systemName: "gear"),
-                                       tag: 4)
-
-        for nav in [nav1, nav2, nav3, nav4] {
-            nav.navigationBar.prefersLargeTitles = true
+        tabs.forEach { tabInfo in
+            setUpTab(with: tabInfo)
         }
+    }
 
-        setViewControllers(
-            [nav1, nav2, nav3, nav4],
-            animated: true
-        )
+    private func setUpTab(with tabInfo: TabInfo) {
+        let navController = UINavigationController(rootViewController: tabInfo.viewController)
+        navController.tabBarItem = UITabBarItem(title: tabInfo.title, image: tabInfo.image, tag: viewControllers?.count ?? 0 + 1)
+        navController.navigationBar.prefersLargeTitles = true
+        setViewControllers((viewControllers ?? []) + [navController], animated: true)
     }
 }

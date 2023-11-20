@@ -27,12 +27,12 @@ final class SearchResultViewModel {
 
         isLoadingMoreResults = true
 
-        guard let request = Request(url: url) else {
+        guard let request = APIRequest(url: url) else {
             isLoadingMoreResults = false
             return
         }
 
-        Service.shared.execute(request, expecting: LocationsResponse.self) { [weak self] result in
+        APIService.shared.execute(request, expecting: LocationsResponse.self) { [weak self] result in
             guard let strongSelf = self else {
                 return
             }
@@ -79,14 +79,14 @@ final class SearchResultViewModel {
 
         isLoadingMoreResults = true
 
-        guard let request = Request(url: url) else {
+        guard let request = APIRequest(url: url) else {
             isLoadingMoreResults = false
             return
         }
 
         switch results {
         case .characters(let existingResults):
-            Service.shared.execute(request, expecting: CharactersResponse.self) { [weak self] result in
+            APIService.shared.execute(request, expecting: CharactersResponse.self) { [weak self] result in
                 guard let strongSelf = self else {
                     return
                 }
@@ -115,7 +115,7 @@ final class SearchResultViewModel {
                 }
             }
         case .episodes(let existingResults):
-            Service.shared.execute(request, expecting: EpisodesResponse.self) { [weak self] result in
+            APIService.shared.execute(request, expecting: EpisodesResponse.self) { [weak self] result in
                 guard let strongSelf = self else {
                     return
                 }

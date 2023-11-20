@@ -7,11 +7,12 @@ final class CharacterPhotoCollectionViewCellViewModel {
         self.imageUrl = imageUrl
     }
 
-    public func fetchImage(completion: @escaping (Result<Data, Error>) -> Void) {
+    func fetchImage(completion: @escaping (Result<Data, Error>) -> Void) {
         guard let imageUrl = imageUrl else {
             completion(.failure(URLError(.badURL)))
             return
         }
-        ImageLoader.shared.downloadImage(imageUrl, completion: completion)
+
+        APIImageLoader.shared.downloadImage(from: imageUrl, completion: completion)
     }
 }

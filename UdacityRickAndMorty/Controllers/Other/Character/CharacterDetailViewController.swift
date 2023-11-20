@@ -66,7 +66,7 @@ extension CharacterDetailViewController: UICollectionViewDelegate, UICollectionV
         switch sectionType {
         case .photo(let viewModel):
             guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: CharacterPhotoCollectionViewCell.cellIdentifer,
+                withReuseIdentifier: CharacterPhotoCollectionViewCell.cellIdentifier,
                 for: indexPath
             ) as? CharacterPhotoCollectionViewCell else {
                 fatalError()
@@ -75,7 +75,7 @@ extension CharacterDetailViewController: UICollectionViewDelegate, UICollectionV
             return cell
         case .information(let viewModels):
             guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: CharacterInfoCollectionViewCell.cellIdentifer,
+                withReuseIdentifier: CharacterInfoCollectionViewCell.cellIdentifier,
                 for: indexPath
             ) as? CharacterInfoCollectionViewCell else {
                 fatalError()
@@ -84,7 +84,7 @@ extension CharacterDetailViewController: UICollectionViewDelegate, UICollectionV
             return cell
         case .episodes(let viewModels):
             guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifer,
+                withReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifier,
                 for: indexPath
             ) as? CharacterEpisodeCollectionViewCell else {
                 fatalError()

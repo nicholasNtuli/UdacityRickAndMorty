@@ -14,7 +14,7 @@ final class LocationDetailView: UIView {
     
     private var viewModel: LocationDetailViewModel? {
         didSet {
-            spinner.stopAnimating()
+            loadingIndicator.stopAnimating()
             self.collectionView?.reloadData()
             self.collectionView?.isHidden = false
             UIView.animate(withDuration: 0.3) {
@@ -23,11 +23,11 @@ final class LocationDetailView: UIView {
         }
     }
 
-    private let spinner: UIActivityIndicatorView = {
-        let spinner = UIActivityIndicatorView()
-        spinner.translatesAutoresizingMaskIntoConstraints = false
-        spinner.hidesWhenStopped = true
-        return spinner
+    private let loadingIndicator: UIActivityIndicatorView = {
+        let loadingIndicator = UIActivityIndicatorView()
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        loadingIndicator.hidesWhenStopped = true
+        return loadingIndicator
     }()
     
     override init(frame: CGRect) {
@@ -35,11 +35,11 @@ final class LocationDetailView: UIView {
         translatesAutoresizingMaskIntoConstraints = false
         backgroundColor = .systemBackground
         let collectionView = createColectionView()
-        addSubviews(collectionView, spinner)
+        addSubviews(collectionView, loadingIndicator)
         self.collectionView = collectionView
         addConstraints()
 
-        spinner.startAnimating()
+        loadingIndicator.startAnimating()
     }
 
     required init?(coder: NSCoder) {
@@ -52,10 +52,10 @@ final class LocationDetailView: UIView {
         }
 
         NSLayoutConstraint.activate([
-            spinner.heightAnchor.constraint(equalToConstant: 100),
-            spinner.widthAnchor.constraint(equalToConstant: 100),
-            spinner.centerXAnchor.constraint(equalTo: centerXAnchor),
-            spinner.centerYAnchor.constraint(equalTo: centerYAnchor),
+            loadingIndicator.heightAnchor.constraint(equalToConstant: 100),
+            loadingIndicator.widthAnchor.constraint(equalToConstant: 100),
+            loadingIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
 
             collectionView.topAnchor.constraint(equalTo: topAnchor),
             collectionView.leftAnchor.constraint(equalTo: leftAnchor),
@@ -80,7 +80,7 @@ final class LocationDetailView: UIView {
         collectionView.register(EpisodeInfoCollectionViewCell.self,
                                 forCellWithReuseIdentifier: EpisodeInfoCollectionViewCell.cellIdentifier)
         collectionView.register(CharacterCollectionViewCell.self,
-                                forCellWithReuseIdentifier: CharacterCollectionViewCell.cellIdentifier)
+                                forCellWithReuseIdentifier: CharacterCollectionViewCell.reuseIdentifier)
         return collectionView
     }
     
@@ -130,7 +130,7 @@ extension LocationDetailView: UICollectionViewDelegate, UICollectionViewDataSour
         case .characters(let viewModels):
             let cellViewModel = viewModels[indexPath.row]
             guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: CharacterCollectionViewCell.cellIdentifier,
+                withReuseIdentifier: CharacterCollectionViewCell.reuseIdentifier,
                 for: indexPath
             ) as? CharacterCollectionViewCell else {
                 fatalError()

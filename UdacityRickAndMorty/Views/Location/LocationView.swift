@@ -10,21 +10,8 @@ final class LocationView: UIView {
 
     private var viewModel: LocationViewModel? {
         didSet {
-            spinner.stopAnimating()
-            tableView.isHidden = false
-            tableView.reloadData()
-            UIView.animate(withDuration: 0.3) {
-                self.tableView.alpha = 1
-            }
-
-            viewModel?.registerFinishPaginationBlock { [weak self] in
-                DispatchQueue.main.async {
-                    // Loading indicator go bye bye
-                    self?.tableView.tableFooterView = nil
-                    // Reload data
-                    self?.tableView.reloadData()
-                }
-            }
+            updateUI()
+            configurePaginationHandling()
         }
     }
 
@@ -33,30 +20,47 @@ final class LocationView: UIView {
         table.translatesAutoresizingMaskIntoConstraints = false
         table.alpha = 0
         table.isHidden = true
-        table.register(LocationTableViewCell.self,
-                       forCellReuseIdentifier: LocationTableViewCell.cellIdentifier)
+        table.register(LocationTableViewCell.self, forCellReuseIdentifier: LocationTableViewCell.cellIdentifier)
         return table
     }()
 
-    private let spinner: UIActivityIndicatorView = {
-        let spinner = UIActivityIndicatorView()
-        spinner.translatesAutoresizingMaskIntoConstraints = false
-        spinner.hidesWhenStopped = true
-        return spinner
+    private let loadingIndicator: UIActivityIndicatorView = {
+        let loadingIndicator = UIActivityIndicatorView(style: .large)
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        loadingIndicator.hidesWhenStopped = true
+        return loadingIndicator
     }()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .systemBackground
         translatesAutoresizingMaskIntoConstraints = false
-        addSubviews(tableView, spinner)
-        spinner.startAnimating()
+        addSubviews(tableView, loadingIndicator)
+        loadingIndicator.startAnimating()
         addConstraints()
         configureTable()
     }
 
     required init?(coder: NSCoder) {
-        fatalError()
+        fatalError("Unsupported")
+    }
+
+    private func updateUI() {
+        loadingIndicator.stopAnimating()
+        tableView.isHidden = false
+        tableView.reloadData()
+        UIView.animate(withDuration: 0.3) {
+            self.tableView.alpha = 1
+        }
+    }
+
+    private func configurePaginationHandling() {
+        viewModel?.registerFinishPaginationBlock { [weak self] in
+            DispatchQueue.main.async {
+                self?.tableView.tableFooterView = nil
+                self?.tableView.reloadData()
+            }
+        }
     }
 
     private func configureTable() {
@@ -66,10 +70,10 @@ final class LocationView: UIView {
 
     private func addConstraints() {
         NSLayoutConstraint.activate([
-            spinner.heightAnchor.constraint(equalToConstant: 100),
-            spinner.widthAnchor.constraint(equalToConstant: 100),
-            spinner.centerXAnchor.constraint(equalTo: centerXAnchor),
-            spinner.centerYAnchor.constraint(equalTo: centerYAnchor),
+            loadingIndicator.heightAnchor.constraint(equalToConstant: 100),
+            loadingIndicator.widthAnchor.constraint(equalToConstant: 100),
+            loadingIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
 
             tableView.topAnchor.constraint(equalTo: topAnchor),
             tableView.leftAnchor.constraint(equalTo: leftAnchor),
@@ -89,7 +93,7 @@ extension LocationView: UITableViewDelegate {
         guard let locationModel = viewModel?.location(at: indexPath.row) else {
             return
         }
-        delegate?.locationView(self,  select: locationModel)
+        delegate?.locationView(self, select: locationModel)
     }
 }
 
@@ -100,14 +104,15 @@ extension LocationView: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cellViewModels = viewModel?.cellViewModels else {
-            fatalError()
+            assertionFailure("Cell view models not available")
+            return UITableViewCell()
         }
-        guard let cell = tableView.dequeueReusableCell(
-            withIdentifier: LocationTableViewCell.cellIdentifier,
-            for: indexPath
-        ) as? LocationTableViewCell else {
-            fatalError()
+
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: LocationTableViewCell.cellIdentifier, for: indexPath) as? LocationTableViewCell else {
+            assertionFailure("Failed to dequeue LocationTableViewCell")
+            return UITableViewCell()
         }
+
         let cellViewModel = cellViewModels[indexPath.row]
         cell.configure(with: cellViewModel)
         return cell
@@ -123,16 +128,13 @@ extension LocationView: UIScrollViewDelegate {
             return
         }
 
-        Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false) { [weak self] t in
-            let offset = scrollView.contentOffset.y
-            let totalContentHeight = scrollView.contentSize.height
-            let totalScrollViewFixedHeight = scrollView.frame.size.height
+        let offset = scrollView.contentOffset.y
+        let totalContentHeight = scrollView.contentSize.height
+        let totalScrollViewFixedHeight = scrollView.frame.size.height
 
-            if offset >= (totalContentHeight - totalScrollViewFixedHeight - 120) {
-                self?.showLoadingIndicator()
-                viewModel.fetchAdditionalLocations()
-            }
-            t.invalidate()
+        if offset >= (totalContentHeight - totalScrollViewFixedHeight - 120) {
+            showLoadingIndicator()
+            viewModel.fetchAdditionalLocations()
         }
     }
 

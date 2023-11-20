@@ -12,8 +12,8 @@ extension UIDevice {
     static let isiPhone = UIDevice.current.userInterfaceIdiom == .phone
 }
 
-extension Request {
-    static let listCharactersRequests = Request(endpoint: .character)
-    static let listEpisodesRequest = Request(endpoint: .episode)
-    static let listLocationsRequest = Request(endpoint: .location)
+extension APIRequest {
+    static let listCharactersRequests = APIRequest(endpoint: .character)
+    static let listEpisodesRequest = APIRequest(endpoint: .episode)
+    static let listLocationsRequest = APIRequest(endpoint: .location)
 }

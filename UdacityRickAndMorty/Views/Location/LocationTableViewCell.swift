@@ -29,28 +29,32 @@ final class LocationTableViewCell: UITableViewCell {
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        contentView.addSubviews(nameLabel, typeLabel, dimensionLabel)
-        addConstraints()
+        configureUI()
+        configureConstraints()
         accessoryType = .disclosureIndicator
     }
 
     required init?(coder: NSCoder) {
-        fatalError()
+        fatalError("init(coder:) has not been implemented")
     }
 
-    private func addConstraints() {
+    private func configureUI() {
+        contentView.addSubviews(nameLabel, typeLabel, dimensionLabel)
+    }
+
+    private func configureConstraints() {
         NSLayoutConstraint.activate([
             nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
-            nameLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 10),
-            nameLabel.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10),
+            nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
+            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
 
             typeLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 10),
-            typeLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 10),
-            typeLabel.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10),
+            typeLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
+            typeLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
 
             dimensionLabel.topAnchor.constraint(equalTo: typeLabel.bottomAnchor, constant: 10),
-            dimensionLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 10),
-            dimensionLabel.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10),
+            dimensionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
+            dimensionLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
             dimensionLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
         ])
     }
@@ -62,7 +66,7 @@ final class LocationTableViewCell: UITableViewCell {
         dimensionLabel.text = nil
     }
 
-    public func configure(with viewModel: LocationTableViewCellViewModel) {
+    func configure(with viewModel: LocationTableViewCellViewModel) {
         nameLabel.text = viewModel.name
         typeLabel.text = viewModel.type
         dimensionLabel.text = viewModel.dimension

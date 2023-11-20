@@ -1,18 +1,15 @@
 import UIKit
 
 protocol CharacterListViewDelegate: AnyObject {
-    func characterListView(
-        _ characterListView: CharacterListView,
-        selectCharacter character: Character
-    )
+    func characterListView(_ characterListView: CharacterListView, selectCharacter character: Character)
 }
 
 final class CharacterListView: UIView {
 
-    public weak var delegate: CharacterListViewDelegate?
+    weak var delegate: CharacterListViewDelegate?
     private let viewModel = CharacterListViewModel()
 
-    private let spinner: UIActivityIndicatorView = {
+    private let loadingIndicator: UIActivityIndicatorView = {
         let spinner = UIActivityIndicatorView(style: .large)
         spinner.hidesWhenStopped = true
         spinner.translatesAutoresizingMaskIntoConstraints = false
@@ -28,7 +25,7 @@ final class CharacterListView: UIView {
         collectionView.alpha = 0
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.register(CharacterCollectionViewCell.self,
-                                forCellWithReuseIdentifier: CharacterCollectionViewCell.cellIdentifier)
+                                forCellWithReuseIdentifier: CharacterCollectionViewCell.reuseIdentifier)
         collectionView.register(FooterLoadingCollectionReusableView.self,
                                 forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
                                 withReuseIdentifier: FooterLoadingCollectionReusableView.identifier)
@@ -38,24 +35,18 @@ final class CharacterListView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         translatesAutoresizingMaskIntoConstraints = false
-        addSubviews(collectionView, spinner)
+        addSubviews(collectionView, loadingIndicator)
         addConstraints()
-        spinner.startAnimating()
-        viewModel.delegate = self
-        viewModel.fetchCharacters()
+        loadingIndicator.startAnimating()
         setUpCollectionView()
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("Unsupported")
     }
 
     private func addConstraints() {
         NSLayoutConstraint.activate([
-            spinner.widthAnchor.constraint(equalToConstant: 100),
-            spinner.heightAnchor.constraint(equalToConstant: 100),
-            spinner.centerXAnchor.constraint(equalTo: centerXAnchor),
-            spinner.centerYAnchor.constraint(equalTo: centerYAnchor),
+            loadingIndicator.widthAnchor.constraint(equalToConstant: 100),
+            loadingIndicator.heightAnchor.constraint(equalToConstant: 100),
+            loadingIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
 
             collectionView.topAnchor.constraint(equalTo: topAnchor),
             collectionView.leftAnchor.constraint(equalTo: leftAnchor),
@@ -68,6 +59,11 @@ final class CharacterListView: UIView {
         collectionView.dataSource = viewModel
         collectionView.delegate = viewModel
     }
+
+    private func setUpViewModel() {
+        viewModel.delegate = self
+        viewModel.fetchCharacters()
+    }
 }
 
 extension CharacterListView: CharacterListViewModelDelegate {
@@ -76,7 +72,7 @@ extension CharacterListView: CharacterListViewModelDelegate {
     }
 
     func loadInitialCharacters() {
-        spinner.stopAnimating()
+        loadingIndicator.stopAnimating()
         collectionView.isHidden = false
         collectionView.reloadData()
         UIView.animate(withDuration: 0.4) {
@@ -85,7 +81,6 @@ extension CharacterListView: CharacterListViewModelDelegate {
     }
 
     func loadMoreCharacters(with newIndexPaths: [IndexPath]) {
-
         collectionView.performBatchUpdates {
             self.collectionView.insertItems(at: newIndexPaths)
         }

@@ -1,25 +1,19 @@
 import UIKit
 
-final class EpisodeViewController: UIViewController, EpisodeListViewDelegate {
+final class EpisodeViewController: UIViewController {
 
     private let episodeListView = EpisodeListView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        configureUI()
+    }
+
+    private func configureUI() {
         view.backgroundColor = .systemBackground
         title = "Episodes"
         setUpView()
         addSearchButton()
-    }
-
-    private func addSearchButton() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(tapSearch))
-    }
-
-    @objc private func tapSearch() {
-        let vc = SearchViewController(config: .init(type: .episode))
-        vc.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(vc, animated: true)
     }
 
     private func setUpView() {
@@ -32,8 +26,25 @@ final class EpisodeViewController: UIViewController, EpisodeListViewDelegate {
             episodeListView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
     }
-    
-    func episodeListView(_ characterListView: EpisodeListView, selectEpisode episode: Episode) {
+
+    private func addSearchButton() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .search,
+            target: self,
+            action: #selector(tapSearch)
+        )
+    }
+
+    @objc private func tapSearch() {
+        let searchConfig = SearchViewController.Config(type: .episode)
+        let searchVC = SearchViewController(config: searchConfig)
+        searchVC.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(searchVC, animated: true)
+    }
+}
+
+extension EpisodeViewController: EpisodeListViewDelegate {
+    func episodeListView(_ episodeListView: EpisodeListView, selectEpisode episode: Episode) {
         let detailVC = EpisodeDetailViewController(url: URL(string: episode.url))
         detailVC.navigationItem.largeTitleDisplayMode = .never
         navigationController?.pushViewController(detailVC, animated: true)

@@ -1,6 +1,6 @@
 import UIKit
 
-final class LocationDetailViewController: UIViewController, LocationDetailViewModelDelegate, LocationDetailViewDelegate {
+final class LocationDetailViewController: UIViewController {
 
     private let viewModel: LocationDetailViewModel
     private let detailView = LocationDetailView()
@@ -12,23 +12,30 @@ final class LocationDetailViewController: UIViewController, LocationDetailViewMo
     }
 
     required init?(coder: NSCoder) {
-        fatalError()
+        fatalError("init(coder:) has not been implemented")
     }
-    
-    @objc
-    private func tapShare() {}
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupUI()
+        fetchData()
+    }
+
+    private func setupUI() {
         view.backgroundColor = .systemBackground
-        view.addSubview(detailView)
+        setupDetailView()
+        setupNavigationBar()
         addConstraints()
+    }
+
+    private func setupDetailView() {
+        view.addSubview(detailView)
         detailView.delegate = self
+    }
+
+    private func setupNavigationBar() {
         title = "Location"
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(tapShare))
-
-        viewModel.delegate = self
-        viewModel.fetchLocationData()
     }
 
     private func addConstraints() {
@@ -41,18 +48,24 @@ final class LocationDetailViewController: UIViewController, LocationDetailViewMo
     }
 
     @objc
-    private func didTapShare() {}
-    
-    func episodeDetailView(
-        _ detailView: LocationDetailView,
-        select character: Character
-    ) {
-        let vc = CharacterDetailViewController(viewModel: .init(character: character))
+    private func tapShare() {}
+
+    private func fetchData() {
+        viewModel.delegate = self
+        viewModel.fetchLocationData()
+    }
+}
+
+extension LocationDetailViewController: LocationDetailViewDelegate {
+    func episodeDetailView(_ detailView: LocationDetailView, select character: Character) {
+        let vc = CharacterDetailViewController(viewModel: CharacterDetailViewModel(character: character))
         vc.title = character.name
         vc.navigationItem.largeTitleDisplayMode = .never
         navigationController?.pushViewController(vc, animated: true)
     }
-    
+}
+
+extension LocationDetailViewController: LocationDetailViewModelDelegate {
     func fetchLocationDetails() {
         detailView.configure(with: viewModel)
     }

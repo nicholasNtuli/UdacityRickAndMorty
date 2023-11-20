@@ -1,31 +1,19 @@
 import UIKit
 
-final class CharacterViewController: UIViewController, CharacterListViewDelegate {
+final class CharacterViewController: UIViewController {
 
     private let characterListView = CharacterListView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        configureUI()
+    }
+
+    private func configureUI() {
         view.backgroundColor = .systemBackground
         title = "Characters"
         setUpView()
         addSearchButton()
-    }
-
-    @objc private func tapSearch() {
-        let vc = SearchViewController(config: .init(type: .character))
-        vc.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(vc, animated: true)
-    }
-    
-    private func addSearchButton() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(tapSearch))
-    }
-
-    @objc private func didTapSearch() {
-        let vc = SearchViewController(config: SearchViewController.Config(type: .character))
-        vc.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(vc, animated: true)
     }
 
     private func setUpView() {
@@ -38,7 +26,24 @@ final class CharacterViewController: UIViewController, CharacterListViewDelegate
             characterListView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
     }
-    
+
+    private func addSearchButton() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .search,
+            target: self,
+            action: #selector(tapSearch)
+        )
+    }
+
+    @objc private func tapSearch() {
+        let searchConfig = SearchViewController.Config(type: .character)
+        let searchVC = SearchViewController(config: searchConfig)
+        searchVC.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(searchVC, animated: true)
+    }
+}
+
+extension CharacterViewController: CharacterListViewDelegate {
     func characterListView(_ characterListView: CharacterListView, selectCharacter character: Character) {
         let viewModel = CharacterDetailViewModel(character: character)
         let detailVC = CharacterDetailViewController(viewModel: viewModel)
@@ -46,3 +51,4 @@ final class CharacterViewController: UIViewController, CharacterListViewDelegate
         navigationController?.pushViewController(detailVC, animated: true)
     }
 }
+

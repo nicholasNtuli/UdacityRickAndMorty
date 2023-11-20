@@ -3,7 +3,9 @@ import UIKit
 final class SearchViewController: UIViewController {
     
     private let viewModel: SearchViewModel
-    private let searchView: SearchView
+    private lazy var searchView: SearchView = {
+        return SearchView(frame: .zero, viewModel: viewModel)
+    }()
     
     struct Config {
         enum `Type` {
@@ -11,7 +13,7 @@ final class SearchViewController: UIViewController {
             case episode
             case location
 
-            var endpoint: Endpoint {
+            var endpoint: APIEndpoint {
                 switch self {
                 case .character: return .character
                 case .episode: return .episode
@@ -19,15 +21,11 @@ final class SearchViewController: UIViewController {
                 }
             }
 
-
             var title: String {
                 switch self {
-                case .character:
-                    return "Search Characters"
-                case .location:
-                    return "Search Location"
-                case .episode:
-                    return "Search Episode"
+                case .character: return "Search Characters"
+                case .location: return "Search Location"
+                case .episode: return "Search Episode"
                 }
             }
         }
@@ -38,7 +36,6 @@ final class SearchViewController: UIViewController {
     init(config: Config) {
         let viewModel = SearchViewModel(config: config)
         self.viewModel = viewModel
-        self.searchView = SearchView(frame: .zero, viewModel: viewModel)
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -48,26 +45,32 @@ final class SearchViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupUI()
+    }
+
+    private func setupUI() {
         title = viewModel.config.type.title
         view.backgroundColor = .systemBackground
-        view.addSubview(searchView)
+        setupSearchView()
         addConstraints()
+        setupNavigationBar()
+    }
+
+    private func setupSearchView() {
+        view.addSubview(searchView)
+        searchView.delegate = self
+    }
+
+    private func setupNavigationBar() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "Search",
             style: .done,
             target: self,
-            action: #selector(tapExecuteSearch)
+            action: #selector(didTapExecuteSearch)
         )
-        searchView.delegate = self
     }
 
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        searchView.presentKeyboard()
-    }
-
-    @objc
-    private func tapExecuteSearch() {
+    @objc private func didTapExecuteSearch() {
         viewModel.executeSearch()
     }
 

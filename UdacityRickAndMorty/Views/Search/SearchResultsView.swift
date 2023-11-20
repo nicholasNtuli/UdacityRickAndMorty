@@ -36,9 +36,9 @@ final class SearchResultsView: UIView {
         collectionView.isHidden = true
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.register(CharacterCollectionViewCell.self,
-                                forCellWithReuseIdentifier: CharacterCollectionViewCell.cellIdentifier)
+                                forCellWithReuseIdentifier: CharacterCollectionViewCell.reuseIdentifier)
         collectionView.register(CharacterEpisodeCollectionViewCell.self,
-                                forCellWithReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifer)
+                                forCellWithReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifier)
         collectionView.register(FooterLoadingCollectionReusableView.self,
                                 forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
                                 withReuseIdentifier: FooterLoadingCollectionReusableView.identifier)
@@ -140,7 +140,7 @@ extension SearchResultsView: UICollectionViewDelegate, UICollectionViewDataSourc
         let currentViewModel = collectionViewCellViewModels[indexPath.row]
         if let characterVM = currentViewModel as? CharacterCollectionViewCellViewModel {
             guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: CharacterCollectionViewCell.cellIdentifier,
+                withReuseIdentifier: CharacterCollectionViewCell.reuseIdentifier,
                 for: indexPath
             ) as? CharacterCollectionViewCell else {
                 fatalError()
@@ -151,7 +151,7 @@ extension SearchResultsView: UICollectionViewDelegate, UICollectionViewDataSourc
         }
         
         guard let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifer,
+            withReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifier,
             for: indexPath
         ) as? CharacterEpisodeCollectionViewCell else {
             fatalError()
@@ -290,7 +290,6 @@ extension SearchResultsView: UIScrollViewDelegate {
                     self?.showTableLoadingIndicator()
                 }
                 viewModel.fetchAdditionalLocations { [weak self] newResults in
-                    // Refresh table
                     self?.tableView.tableFooterView = nil
                     self?.locationCellViewModels = newResults
                     self?.tableView.reloadData()

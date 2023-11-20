@@ -5,61 +5,44 @@ protocol LocationViewModelDelegate: AnyObject {
 }
 
 final class LocationViewModel {
-    
+
     weak var delegate: LocationViewModelDelegate?
     private var apiInfo: LocationsResponse.Info?
-    public private(set) var cellViewModels: [LocationTableViewCellViewModel] = []
-    public var isLoadingMoreLocations = false
+    private(set) var cellViewModels: [LocationTableViewCellViewModel] = []
+    var isLoadingMoreLocations = false
     private var finishPagination: (() -> Void)?
-    
+
     private var locations: [Location] = [] {
         didSet {
-            for location in locations {
-                let cellViewModel = LocationTableViewCellViewModel(location: location)
-                if !cellViewModels.contains(cellViewModel) {
-                    cellViewModels.append(cellViewModel)
-                }
-            }
+            updateCellViewModels()
         }
     }
-    
-    public var shouldShowLoadMoreIndicator: Bool {
+
+    var shouldShowLoadMoreIndicator: Bool {
         return apiInfo?.next != nil
     }
-    
-    public func registerFinishPaginationBlock(_ block: @escaping () -> Void) {
-        self.finishPagination = block
+
+    func registerFinishPaginationBlock(_ block: @escaping () -> Void) {
+        finishPagination = block
     }
-    
-    public func fetchAdditionalLocations() {
-        guard !isLoadingMoreLocations else {
+
+    func fetchAdditionalLocations() {
+        guard !isLoadingMoreLocations, let nextUrlString = apiInfo?.next, let url = URL(string: nextUrlString), let request = APIRequest(url: url) else {
             return
         }
-        
-        guard let nextUrlString = apiInfo?.next,
-              let url = URL(string: nextUrlString) else {
-            return
-        }
-        
+
         isLoadingMoreLocations = true
-        
-        guard let request = Request(url: url) else {
-            isLoadingMoreLocations = false
-            return
-        }
-        
-        Service.shared.execute(request, expecting: LocationsResponse.self) { [weak self] result in
-            guard let strongSelf = self else {
-                return
-            }
+
+        APIService.shared.execute(request, expecting: LocationsResponse.self) { [weak self] result in
+            guard let strongSelf = self else { return }
+
             switch result {
             case .success(let responseModel):
                 let moreResults = responseModel.results
                 let info = responseModel.info
                 strongSelf.apiInfo = info
-                strongSelf.cellViewModels.append(contentsOf: moreResults.compactMap({
-                    return LocationTableViewCellViewModel(location: $0)
-                }))
+                strongSelf.cellViewModels.append(contentsOf: moreResults.map { LocationTableViewCellViewModel(location: $0) })
+
                 DispatchQueue.main.async {
                     strongSelf.isLoadingMoreLocations = false
                     strongSelf.finishPagination?()
@@ -70,16 +53,16 @@ final class LocationViewModel {
             }
         }
     }
-    
-    public func location(at index: Int) -> Location? {
+
+    func location(at index: Int) -> Location? {
         guard index < locations.count, index >= 0 else {
             return nil
         }
-        return self.locations[index]
+        return locations[index]
     }
-    
-    public func fetchLocations() {
-        Service.shared.execute(
+
+    func fetchLocations() {
+        APIService.shared.execute(
             .listLocationsRequest,
             expecting: LocationsResponse.self
         ) { [weak self] result in
@@ -95,8 +78,13 @@ final class LocationViewModel {
             }
         }
     }
-    
-    private var hasMoreResults: Bool {
-        return false
+
+    private func updateCellViewModels() {
+        locations.forEach { location in
+            let cellViewModel = LocationTableViewCellViewModel(location: location)
+            if !cellViewModels.contains(cellViewModel) {
+                cellViewModels.append(cellViewModel)
+            }
+        }
     }
 }

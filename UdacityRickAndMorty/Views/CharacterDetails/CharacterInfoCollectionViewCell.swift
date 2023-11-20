@@ -2,7 +2,7 @@ import UIKit
 
 final class CharacterInfoCollectionViewCell: UICollectionViewCell {
    
-    static let cellIdentifer = "CharacterInfoCollectionViewCell"
+    static let cellIdentifier = "CharacterInfoCollectionViewCell"
 
     private let valueLabel: UILabel = {
         let label = UILabel()

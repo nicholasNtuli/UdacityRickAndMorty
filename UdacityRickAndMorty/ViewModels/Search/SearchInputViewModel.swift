@@ -1,6 +1,7 @@
 import Foundation
 
 final class SearchInputViewModel {
+    
     private let type: SearchViewController.Config.`Type`
     
     enum DynamicOption: String {
@@ -32,8 +33,8 @@ final class SearchInputViewModel {
         self.type = type
     }
     
-    public var hasDynamicOptions: Bool {
-        switch self.type {
+    var hasDynamicOptions: Bool {
+        switch type {
         case .character, .location:
             return true
         case .episode:
@@ -41,8 +42,8 @@ final class SearchInputViewModel {
         }
     }
     
-    public var options: [DynamicOption] {
-        switch self.type {
+    var options: [DynamicOption] {
+        switch type {
         case .character:
             return [.status, .gender]
         case .location:
@@ -52,8 +53,8 @@ final class SearchInputViewModel {
         }
     }
     
-    public var searchPlaceholderText: String {
-        switch self.type {
+    var searchPlaceholderText: String {
+        switch type {
         case .character:
             return "Character Name"
         case .location:
