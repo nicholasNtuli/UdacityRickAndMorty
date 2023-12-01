@@ -2,26 +2,22 @@ import Foundation
 
 final class CharacterCollectionViewCellViewModel: Hashable, Equatable {
     
-    var characterName: String
-    var characterStatus: CharacterStatus
-    var characterImageUrl: URL?
+    var characterCollectionViewCellCharacterName: String
+    var characterCollectionViewCellCharacterStatus: CharacterStatus
+    var characterCollectionViewCellCharacterImageUrl: URL?
     
-    init(
-        characterName: String,
-        characterStatus: CharacterStatus,
-        characterImageUrl: URL?
-    ) {
-        self.characterName = characterName
-        self.characterStatus = characterStatus
-        self.characterImageUrl = characterImageUrl
+    init(characterCollectionViewCellCharacterName: String, characterCollectionViewCellCharacterStatus: CharacterStatus, characterCollectionViewCellCharacterImageUrl: URL? = nil) {
+        self.characterCollectionViewCellCharacterName = characterCollectionViewCellCharacterName
+        self.characterCollectionViewCellCharacterStatus = characterCollectionViewCellCharacterStatus
+        self.characterCollectionViewCellCharacterImageUrl = characterCollectionViewCellCharacterImageUrl
     }
     
-    var characterStatusText: String {
-        return "Status: \(characterStatus.status)"
+    var characterCollectionViewCellCharacterStatusText: String {
+        return "Status: \(characterCollectionViewCellCharacterStatus.status)"
     }
     
-    func fetchImage(completion: @escaping (Result<Data, Error>) -> Void) {
-        guard let url = characterImageUrl else {
+    func fetchCharacterCollectionViewCellImage(completion: @escaping (Result<Data, Error>) -> Void) {
+        guard let url = characterCollectionViewCellCharacterImageUrl else {
             completion(.failure(URLError(.badURL)))
             return
         }
@@ -29,14 +25,14 @@ final class CharacterCollectionViewCellViewModel: Hashable, Equatable {
     }
     
     static func == (lhs: CharacterCollectionViewCellViewModel, rhs: CharacterCollectionViewCellViewModel) -> Bool {
-        return lhs.characterName == rhs.characterName &&
-               lhs.characterStatus == rhs.characterStatus &&
-               lhs.characterImageUrl == rhs.characterImageUrl
+        return lhs.characterCollectionViewCellCharacterName == rhs.characterCollectionViewCellCharacterName &&
+               lhs.characterCollectionViewCellCharacterStatus == rhs.characterCollectionViewCellCharacterStatus &&
+               lhs.characterCollectionViewCellCharacterImageUrl == rhs.characterCollectionViewCellCharacterImageUrl
     }
     
     func hash(into hasher: inout Hasher) {
-        hasher.combine(characterName)
-        hasher.combine(characterStatus)
-        hasher.combine(characterImageUrl)
+        hasher.combine(characterCollectionViewCellCharacterName)
+        hasher.combine(characterCollectionViewCellCharacterStatus)
+        hasher.combine(characterCollectionViewCellCharacterImageUrl)
     }
 }

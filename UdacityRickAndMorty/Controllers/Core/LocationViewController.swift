@@ -2,68 +2,72 @@ import UIKit
 
 final class LocationViewController: UIViewController {
 
-    private let locationView = LocationView()
-    private let viewModel = LocationViewModel()
+    private let locationUIView = LocationUIView()
+    private let locationViewModel = LocationViewModel()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureUI()
-        configureViewModel()
+        locationViewCUICnfiguration()
+        locationViewViewModelConfiguration()
     }
 
-    private func configureUI() {
+    private func locationViewCUICnfiguration() {
         view.backgroundColor = .systemBackground
         title = "Locations"
-        addSubviews()
-        addConstraints()
-        addSearchButton()
+        addLocationViewSubviews()
+        addLocationViewConstraints()
+        addLocationViewSearchButton()
     }
 
-    private func addSubviews() {
-        locationView.delegate = self
-        view.addSubview(locationView)
+    private func addLocationViewSubviews() {
+        locationUIView.locationViewDelegate = self
+        view.addSubview(locationUIView)
     }
 
-    private func addConstraints() {
+    private func addLocationViewConstraints() {
         NSLayoutConstraint.activate([
-            locationView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            locationView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
-            locationView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
-            locationView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            locationUIView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            locationUIView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
+            locationUIView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
+            locationUIView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
     }
 
-    private func addSearchButton() {
+    private func addLocationViewSearchButton() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .search,
             target: self,
-            action: #selector(tapSearch)
+            action: #selector(tapLocationViewSearch)
         )
     }
 
-    private func configureViewModel() {
-        viewModel.delegate = self
-        viewModel.fetchLocations()
+    private func locationViewViewModelConfiguration() {
+        locationViewModel.locationViewModelDelegate = self
+        locationViewModel.fetchLocations()
     }
 
-    @objc private func tapSearch() {
-        let searchConfig = SearchViewController.Config(type: .location)
-        let searchVC = SearchViewController(config: searchConfig)
-        searchVC.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(searchVC, animated: true)
+    @objc private func tapLocationViewSearch() {
+        let locationViewSearchConfiguration = SearchViewController.SearchViewControllerConfiguration(searchViewType: .location)
+        let locationViewSearchViewController = SearchViewController(config: locationViewSearchConfiguration)
+        
+        locationViewSearchViewController.navigationItem.largeTitleDisplayMode = .never
+        
+        navigationController?.pushViewController(locationViewSearchViewController, animated: true)
     }
 }
 
 extension LocationViewController: LocationViewModelDelegate {
-    func fetchInitialLocations() {
-        locationView.configure(with: viewModel)
+    func downloadLocations() {
+        locationUIView.locationViewConfiguration(with: locationViewModel)
     }
 }
 
 extension LocationViewController: LocationViewDelegate {
-    func locationView(_ locationView: LocationView, select location: Location) {
-        let locationDetailVC = LocationDetailViewController(location: location)
-        locationDetailVC.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(locationDetailVC, animated: true)
+    func downloadLocationView(_ locationView: LocationUIView, select location: Location) {
+        let locationViewDetailViewController = LocationDetailViewController(location: location)
+        
+        locationViewDetailViewController.navigationItem.largeTitleDisplayMode = .never
+        
+        navigationController?.pushViewController(locationViewDetailViewController, animated: true)
     }
 }

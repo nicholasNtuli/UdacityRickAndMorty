@@ -2,22 +2,22 @@ import UIKit
 
 final class CharacterViewController: UIViewController {
 
-    private let characterListView = CharacterListView()
+    private let characterListView = CharacterViewList()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureUI()
+        characterViewListConfigurationUI()
     }
 
-    private func configureUI() {
+    private func characterViewListConfigurationUI() {
         view.backgroundColor = .systemBackground
         title = "Characters"
-        setUpView()
-        addSearchButton()
+        characterViewListViewSetup()
+        addCharacterViewListSearchButton()
     }
 
-    private func setUpView() {
-        characterListView.delegate = self
+    private func characterViewListViewSetup() {
+        characterListView.characterListDelegate = self
         view.addSubview(characterListView)
         NSLayoutConstraint.activate([
             characterListView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -27,28 +27,28 @@ final class CharacterViewController: UIViewController {
         ])
     }
 
-    private func addSearchButton() {
+    private func addCharacterViewListSearchButton() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .search,
             target: self,
-            action: #selector(tapSearch)
+            action: #selector(tapCharacterViewListSearch)
         )
     }
 
-    @objc private func tapSearch() {
-        let searchConfig = SearchViewController.Config(type: .character)
-        let searchVC = SearchViewController(config: searchConfig)
-        searchVC.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(searchVC, animated: true)
+    @objc private func tapCharacterViewListSearch() {
+        let characterViewListConfigurationSearch = SearchViewController.SearchViewControllerConfiguration(searchViewType: .character)
+        let searchCharacterViewListViewController = SearchViewController(config: characterViewListConfigurationSearch)
+        searchCharacterViewListViewController.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(searchCharacterViewListViewController, animated: true)
     }
 }
 
 extension CharacterViewController: CharacterListViewDelegate {
-    func characterListView(_ characterListView: CharacterListView, selectCharacter character: Character) {
-        let viewModel = CharacterDetailViewModel(character: character)
-        let detailVC = CharacterDetailViewController(viewModel: viewModel)
-        detailVC.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(detailVC, animated: true)
+    func downloadFullCharacterViewList(_ characterViewList: CharacterViewList, selectCharacter character: Character) {
+        let characterViewListViewModel = CharacterDetailViewModel(characterDetail: character)
+        let characterViewListDetailViewController = CharacterDetailViewController(viewModel: characterViewListViewModel)
+        characterViewListDetailViewController.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(characterViewListDetailViewController, animated: true)
     }
 }
 

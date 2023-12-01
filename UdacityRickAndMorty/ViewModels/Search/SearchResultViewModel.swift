@@ -2,143 +2,145 @@ import Foundation
 
 final class SearchResultViewModel {
     
-    public private(set) var results: SearchResultType
-    private var next: String?
-    public private(set) var isLoadingMoreResults = false
+    public private(set) var searchResults: SearchResultType
+    private var nextSearchResult: String?
+    public private(set) var searchResultsLoading = false
 
-    init(results: SearchResultType, next: String?) {
-        self.results = results
-        self.next = next
+    init(searchResults: SearchResultType, next: String?) {
+        self.searchResults = searchResults
+        self.nextSearchResult = next
     }
 
-    public var shouldShowLoadMoreIndicator: Bool {
-        return next != nil
+    public var searchResultLoadingIndicator: Bool {
+        return nextSearchResult != nil
     }
 
-    public func fetchAdditionalLocations(completion: @escaping ([LocationTableViewCellViewModel]) -> Void) {
-        guard !isLoadingMoreResults else {
+    public func downloadAdditionalSearchResults(completion: @escaping ([LocationTableViewCellViewModel]) -> Void) {
+        guard !searchResultsLoading else {
             return
         }
 
-        guard let nextUrlString = next,
-              let url = URL(string: nextUrlString) else {
+        guard let nextSearchResultsURLString = nextSearchResult,
+              let searchResultsURL = URL(string: nextSearchResultsURLString) else {
             return
         }
 
-        isLoadingMoreResults = true
+        searchResultsLoading = true
 
-        guard let request = APIRequest(url: url) else {
-            isLoadingMoreResults = false
+        guard let searchResultsRequest = APIRequest(url: searchResultsURL) else {
+            searchResultsLoading = false
             return
         }
 
-        APIService.shared.execute(request, expecting: LocationsResponse.self) { [weak self] result in
+        APIService.shared.execute(searchResultsRequest, expecting: LocationsResponse.self) { [weak self] searchResultsResult in
             guard let strongSelf = self else {
                 return
             }
-            switch result {
-            case .success(let responseModel):
-                let moreResults = responseModel.results
-                let info = responseModel.info
-                strongSelf.next = info.next
+            switch searchResultsResult {
+            case .success(let searchResultsResponseModel):
+                let additionalSearchResults = searchResultsResponseModel.results
+                let searchResultsInfo = searchResultsResponseModel.info
+                strongSelf.nextSearchResult = searchResultsInfo.next
 
-                let additionalLocations = moreResults.compactMap({
-                    return LocationTableViewCellViewModel(location: $0)
+                let additionalSearchResultsLocations = additionalSearchResults.compactMap({
+                    return LocationTableViewCellViewModel(locationTable: $0)
                 })
-                var newResults: [LocationTableViewCellViewModel] = []
+                
+                var newSearchResults: [LocationTableViewCellViewModel] = []
 
-                switch strongSelf.results {
+                switch strongSelf.searchResults {
                 case .locations(let existingResults):
-                    newResults = existingResults + additionalLocations
-                    strongSelf.results = .locations(newResults)
+                    newSearchResults = existingResults + additionalSearchResultsLocations
+                    strongSelf.searchResults = .locations(newSearchResults)
                     break
                 case .characters, .episodes:
                     break
                 }
 
                 DispatchQueue.main.async {
-                    strongSelf.isLoadingMoreResults = false
-                    completion(newResults)
+                    strongSelf.searchResultsLoading = false
+                    completion(newSearchResults)
                 }
             case .failure(let failure):
                 print(String(describing: failure))
-                self?.isLoadingMoreResults = false
+                self?.searchResultsLoading = false
             }
         }
     }
 
-    public func fetchAdditionalResults(completion: @escaping ([any Hashable]) -> Void) {
-        guard !isLoadingMoreResults else {
+    public func downloadAdditionalSearchResults(completion: @escaping ([any Hashable]) -> Void) {
+        guard !searchResultsLoading else {
             return
         }
 
-        guard let nextUrlString = next,
-              let url = URL(string: nextUrlString) else {
+        guard let nextSearchResultsString = nextSearchResult,
+              let searchResultURL = URL(string: nextSearchResultsString) else {
             return
         }
 
-        isLoadingMoreResults = true
+        searchResultsLoading = true
 
-        guard let request = APIRequest(url: url) else {
-            isLoadingMoreResults = false
+        guard let searchRequest = APIRequest(url: searchResultURL) else {
+            searchResultsLoading = false
             return
         }
 
-        switch results {
-        case .characters(let existingResults):
-            APIService.shared.execute(request, expecting: CharactersResponse.self) { [weak self] result in
+        switch searchResults {
+        case .characters(let existingSearchResults):
+            APIService.shared.execute(searchRequest, expecting: CharactersResponse.self) { [weak self] searchResult in
                 guard let strongSelf = self else {
                     return
                 }
-                switch result {
-                case .success(let responseModel):
-                    let moreResults = responseModel.results
-                    let info = responseModel.info
-                    strongSelf.next = info.next
+                switch searchResult {
+                case .success(let searchReaserchResponseModel):
+                    let additionalSearchResults = searchReaserchResponseModel.results
+                    let searchResultsInfo = searchReaserchResponseModel.info
+                    strongSelf.nextSearchResult = searchResultsInfo.next
 
-                    let additionalResults = moreResults.compactMap({
-                        return CharacterCollectionViewCellViewModel(characterName: $0.name,
-                                                                      characterStatus: $0.status,
-                                                                      characterImageUrl: URL(string: $0.image))
+                    let additionalResults = additionalSearchResults.compactMap({
+                        return CharacterCollectionViewCellViewModel(characterCollectionViewCellCharacterName: $0.name,
+                                                                    characterCollectionViewCellCharacterStatus: $0.status,
+                                                                    characterCollectionViewCellCharacterImageUrl: URL(string: $0.image))
                     })
-                    var newResults: [CharacterCollectionViewCellViewModel] = []
-                    newResults = existingResults + additionalResults
-                    strongSelf.results = .characters(newResults)
+                    var newSearchResults: [CharacterCollectionViewCellViewModel] = []
+                    newSearchResults = existingSearchResults + additionalResults
+                    strongSelf.searchResults = .characters(newSearchResults)
 
                     DispatchQueue.main.async {
-                        strongSelf.isLoadingMoreResults = false
-                        completion(newResults)
+                        strongSelf.searchResultsLoading = false
+                        completion(newSearchResults)
                     }
-                case .failure(let failure):
-                    print(String(describing: failure))
-                    self?.isLoadingMoreResults = false
+                case .failure(let searchResuktsFailure):
+                    print(String(describing: searchResuktsFailure))
+                    self?.searchResultsLoading = false
                 }
             }
-        case .episodes(let existingResults):
-            APIService.shared.execute(request, expecting: EpisodesResponse.self) { [weak self] result in
+        case .episodes(let existingSearchResults):
+            APIService.shared.execute(searchRequest, expecting: EpisodesResponse.self) { [weak self] searchRequestResults in
                 guard let strongSelf = self else {
                     return
                 }
-                switch result {
-                case .success(let responseModel):
-                    let moreResults = responseModel.results
-                    let info = responseModel.info
-                    strongSelf.next = info.next
+                switch searchRequestResults {
+                case .success(let searchRequestResponseModel):
+                    let additionalSearchResults = searchRequestResponseModel.results
+                    let searchResultsInfo = searchRequestResponseModel.info
+                    strongSelf.nextSearchResult = searchResultsInfo.next
 
-                    let additionalResults = moreResults.compactMap({
-                        return CharacterEpisodeCollectionViewCellViewModel(episodeDataUrl: URL(string: $0.url))
+                    let additionalResultForSearch = additionalSearchResults.compactMap({
+                        return CharacterEpisodeSectionViewModel(characterEpisodeBaseURL: URL(string: $0.url))
                     })
-                    var newResults: [CharacterEpisodeCollectionViewCellViewModel] = []
-                    newResults = existingResults + additionalResults
-                    strongSelf.results = .episodes(newResults)
+                    
+                    var newSearchResults: [CharacterEpisodeSectionViewModel] = []
+                    newSearchResults = existingSearchResults + additionalResultForSearch
+                    strongSelf.searchResults = .episodes(newSearchResults)
 
                     DispatchQueue.main.async {
-                        strongSelf.isLoadingMoreResults = false
-                        completion(newResults)
+                        strongSelf.searchResultsLoading = false
+                        completion(newSearchResults)
                     }
-                case .failure(let failure):
-                    print(String(describing: failure))
-                    self?.isLoadingMoreResults = false
+                case .failure(let seachResultsFailure):
+                    print(String(describing: seachResultsFailure))
+                    self?.searchResultsLoading = false
                 }
             }
         case .locations:
@@ -149,6 +151,6 @@ final class SearchResultViewModel {
 
 enum SearchResultType {
     case characters([CharacterCollectionViewCellViewModel])
-    case episodes([CharacterEpisodeCollectionViewCellViewModel])
+    case episodes([CharacterEpisodeSectionViewModel])
     case locations([LocationTableViewCellViewModel])
 }

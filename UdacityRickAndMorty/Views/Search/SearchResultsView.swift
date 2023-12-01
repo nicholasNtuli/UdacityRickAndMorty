@@ -1,270 +1,274 @@
 import UIKit
 
 protocol SearchResultsViewDelegate: AnyObject {
-    func searchResultsView(_ resultsView: SearchResultsView, tapLocationAt index: Int)
-    func searchResultsView(_ resultsView: SearchResultsView, tapCharacterAt index: Int)
-    func searchResultsView(_ resultsView: SearchResultsView, tapEpisodeAt index: Int)
+    func searchViewResults(_ resultsView: SearchResultsView, tapLocationAt index: Int)
+    func searchLocationResultsView(_ resultsView: SearchResultsView, tapCharacterAt index: Int)
+    func searchEpisodeResultsView(_ resultsView: SearchResultsView, tapEpisodeAt index: Int)
 }
 
 final class SearchResultsView: UIView {
+    weak var searchResultDelegate: SearchResultsViewDelegate?
+    private var searchResultLocationCellViewModels: [LocationTableViewCellViewModel] = []
+    private var searchResultCollectionViewCellViewModels: [any Hashable] = []
     
-    weak var delegate: SearchResultsViewDelegate?
-    private var locationCellViewModels: [LocationTableViewCellViewModel] = []
-    private var collectionViewCellViewModels: [any Hashable] = []
-    
-    private var viewModel: SearchResultViewModel? {
+    private var searchResultViewModel: SearchResultViewModel? {
         didSet {
-            self.processViewModel()
+            self.processSearchResultViewModel()
         }
     }
     
-    private let tableView: UITableView = {
-        let table = UITableView()
-        table.register(LocationTableViewCell.self,
-                       forCellReuseIdentifier: LocationTableViewCell.cellIdentifier)
-        table.isHidden = true
-        table.translatesAutoresizingMaskIntoConstraints = false
-        return table
+    private let searchResultTableView: UITableView = {
+        let searchResultTableView = UITableView()
+        
+        searchResultTableView.register(LocationTableViewCell.self, forCellReuseIdentifier: LocationTableViewCell.reuseCellIdentifier)
+        searchResultTableView.isHidden = true
+        searchResultTableView.translatesAutoresizingMaskIntoConstraints = false
+        
+        return searchResultTableView
     }()
     
-    private let collectionView: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .vertical
-        layout.sectionInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+    private let searchResultCollectionView: UICollectionView = {
+        let searchResultLayout = UICollectionViewFlowLayout()
         
-        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.isHidden = true
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.register(CharacterCollectionViewCell.self,
-                                forCellWithReuseIdentifier: CharacterCollectionViewCell.reuseIdentifier)
-        collectionView.register(CharacterEpisodeCollectionViewCell.self,
-                                forCellWithReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifier)
-        collectionView.register(FooterLoadingCollectionReusableView.self,
-                                forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
-                                withReuseIdentifier: FooterLoadingCollectionReusableView.identifier)
-        return collectionView
+        searchResultLayout.scrollDirection = .vertical
+        searchResultLayout.sectionInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        
+        let searchResultCollectionView = UICollectionView(frame: .zero, collectionViewLayout: searchResultLayout)
+        
+        searchResultCollectionView.isHidden = true
+        searchResultCollectionView.translatesAutoresizingMaskIntoConstraints = false
+        searchResultCollectionView.register(CharacterCollectionViewCell.self, forCellWithReuseIdentifier: CharacterCollectionViewCell.reuseIdentifier)
+        searchResultCollectionView.register(CharacterEpisodeCollectionViewCell.self, forCellWithReuseIdentifier: CharacterEpisodeCollectionViewCell.resueCellIdentifier)
+        searchResultCollectionView.register(FooterLoadingCollectionReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: FooterLoadingCollectionReusableView.footerLoadingCollectionIdentifier)
+        
+        return searchResultCollectionView
     }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         isHidden = true
         translatesAutoresizingMaskIntoConstraints = false
-        addSubviews(tableView, collectionView)
-        addConstraints()
+        addCharacterDetailLoadingIndicatorSubviews(searchResultTableView, searchResultCollectionView)
+        addSearchResultConstraints()
     }
     
     required init?(coder: NSCoder) {
         fatalError()
     }
     
-    private func processViewModel() {
-        guard let viewModel = viewModel else {
+    private func processSearchResultViewModel() {
+        guard let searchResultViewModel = searchResultViewModel else {
             return
         }
         
-        switch viewModel.results {
-        case .characters(let viewModels):
-            self.collectionViewCellViewModels = viewModels
-            setUpCollectionView()
-        case .locations(let viewModels):
-            setUpTableView(viewModels: viewModels)
-        case .episodes(let viewModels):
-            self.collectionViewCellViewModels = viewModels
-            setUpCollectionView()
+        switch searchResultViewModel.searchResults {
+        case .characters(let searchResultCharctersViewModels):
+            self.searchResultCollectionViewCellViewModels = searchResultCharctersViewModels
+            searchResultCollectionViewSetup()
+        
+        case .locations(let searchResultlocationViewModels):
+            searchResultTableViewSetup(viewModels: searchResultlocationViewModels)
+        
+        case .episodes(let searchResultEpisodeViewModels):
+            self.searchResultCollectionViewCellViewModels = searchResultEpisodeViewModels
+            searchResultCollectionViewSetup()
         }
     }
     
-    private func setUpCollectionView() {
-        self.tableView.isHidden = true
-        self.collectionView.isHidden = false
-        collectionView.delegate = self
-        collectionView.dataSource = self
-        collectionView.reloadData()
+    private func searchResultCollectionViewSetup() {
+        self.searchResultTableView.isHidden = true
+        self.searchResultCollectionView.isHidden = false
+        searchResultCollectionView.delegate = self
+        searchResultCollectionView.dataSource = self
+        searchResultCollectionView.reloadData()
     }
     
-    private func setUpTableView(viewModels: [LocationTableViewCellViewModel]) {
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.isHidden = false
-        collectionView.isHidden = true
-        self.locationCellViewModels = viewModels
-        tableView.reloadData()
+    private func searchResultTableViewSetup(viewModels: [LocationTableViewCellViewModel]) {
+        searchResultTableView.delegate = self
+        searchResultTableView.dataSource = self
+        searchResultTableView.isHidden = false
+        searchResultCollectionView.isHidden = true
+        self.searchResultLocationCellViewModels = viewModels
+        searchResultTableView.reloadData()
     }
     
-    private func addConstraints() {
+    private func addSearchResultConstraints() {
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: topAnchor),
-            tableView.leftAnchor.constraint(equalTo: leftAnchor),
-            tableView.rightAnchor.constraint(equalTo: rightAnchor),
-            tableView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            searchResultTableView.topAnchor.constraint(equalTo: topAnchor),
+            searchResultTableView.leftAnchor.constraint(equalTo: leftAnchor),
+            searchResultTableView.rightAnchor.constraint(equalTo: rightAnchor),
+            searchResultTableView.bottomAnchor.constraint(equalTo: bottomAnchor),
             
-            collectionView.topAnchor.constraint(equalTo: topAnchor),
-            collectionView.leftAnchor.constraint(equalTo: leftAnchor),
-            collectionView.rightAnchor.constraint(equalTo: rightAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            searchResultCollectionView.topAnchor.constraint(equalTo: topAnchor),
+            searchResultCollectionView.leftAnchor.constraint(equalTo: leftAnchor),
+            searchResultCollectionView.rightAnchor.constraint(equalTo: rightAnchor),
+            searchResultCollectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
     }
     
-    public func configure(with viewModel: SearchResultViewModel) {
-        self.viewModel = viewModel
+    public func searchResultConfiguration(with viewModel: SearchResultViewModel) {
+        self.searchResultViewModel = viewModel
     }
 }
 
 extension SearchResultsView: UITableViewDataSource, UITableViewDelegate {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return locationCellViewModels.count
+    func tableView(_ searchResultTableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return searchResultLocationCellViewModels.count
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: LocationTableViewCell.cellIdentifier,
-                                                       for: indexPath) as? LocationTableViewCell else {
+    func tableView(_ tableView: UITableView, cellForRowAt searchResultIndexPath: IndexPath) -> UITableViewCell {
+        guard let searchResultCell = tableView.dequeueReusableCell(withIdentifier: LocationTableViewCell.reuseCellIdentifier, for: searchResultIndexPath) as? LocationTableViewCell else {
             fatalError("Failed to dequeue LocationTableViewCell")
         }
-        cell.configure(with: locationCellViewModels[indexPath.row])
-        return cell
+        
+        searchResultCell.locationTableViewConfiguration(with: searchResultLocationCellViewModels[searchResultIndexPath.row])
+        
+        return searchResultCell
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        delegate?.searchResultsView(self, tapLocationAt: indexPath.row)
+    func tableView(_ searchResultTableView: UITableView, didSelectRowAt searchResultIndexPath: IndexPath) {
+        searchResultTableView.deselectRow(at: searchResultIndexPath, animated: true)
+        searchResultDelegate?.searchViewResults(self, tapLocationAt: searchResultIndexPath.row)
     }
 }
 
 extension SearchResultsView: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return collectionViewCellViewModels.count
+        return searchResultCollectionViewCellViewModels.count
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let currentViewModel = collectionViewCellViewModels[indexPath.row]
-        if let characterVM = currentViewModel as? CharacterCollectionViewCellViewModel {
-            guard let cell = collectionView.dequeueReusableCell(
+    func collectionView(_ searchResultCollectionView: UICollectionView, cellForItemAt searchResultIndexPath: IndexPath) -> UICollectionViewCell {
+        let searchResultCollectionViewCellViewModel = searchResultCollectionViewCellViewModels[searchResultIndexPath.row]
+        
+        if let searchResultCharacterViewModel = searchResultCollectionViewCellViewModel as? CharacterCollectionViewCellViewModel {
+            guard let searchResultCell = searchResultCollectionView.dequeueReusableCell(
                 withReuseIdentifier: CharacterCollectionViewCell.reuseIdentifier,
-                for: indexPath
+                for: searchResultIndexPath
             ) as? CharacterCollectionViewCell else {
                 fatalError()
             }
             
-            cell.configure(with: characterVM)
-            return cell
+            searchResultCell.characterCollectionViewConfigure(with: searchResultCharacterViewModel)
+        
+            return searchResultCell
         }
         
-        guard let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifier,
-            for: indexPath
+        guard let searchResultCell = searchResultCollectionView.dequeueReusableCell(
+            withReuseIdentifier: CharacterEpisodeCollectionViewCell.resueCellIdentifier,
+            for: searchResultIndexPath
         ) as? CharacterEpisodeCollectionViewCell else {
             fatalError()
         }
-        if let episodeVM = currentViewModel as? CharacterEpisodeCollectionViewCellViewModel {
-            cell.configure(with: episodeVM)
+        
+        if let searchResultEpisodeViewModel = searchResultCollectionViewCellViewModel as? CharacterEpisodeSectionViewModel {
+            searchResultCell.characterEpisodeCollectionViewConfiguration(with: searchResultEpisodeViewModel)
         }
-        return cell
+        
+        return searchResultCell
     }
     
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        collectionView.deselectItem(at: indexPath, animated: true)
+    func collectionView(_ searchResultCollectionView: UICollectionView, didSelectItemAt searchResultIndexPath: IndexPath) {
+        searchResultCollectionView.deselectItem(at: searchResultIndexPath, animated: true)
         
-        guard let viewModel = viewModel else {
+        guard let searchResultViewModel = searchResultViewModel else {
             return
         }
         
-        switch viewModel.results {
+        switch searchResultViewModel.searchResults {
         case .characters:
-            delegate?.searchResultsView(self, tapCharacterAt: indexPath.row)
+            searchResultDelegate?.searchLocationResultsView(self, tapCharacterAt: searchResultIndexPath.row)
         case .episodes:
-            delegate?.searchResultsView(self, tapEpisodeAt: indexPath.row)
+            searchResultDelegate?.searchEpisodeResultsView(self, tapEpisodeAt: searchResultIndexPath.row)
         case .locations:
             break
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let currentViewModel = collectionViewCellViewModels[indexPath.row]
-        let bounds = collectionView.bounds
+        let currentSearchResultViewModel = searchResultCollectionViewCellViewModels[indexPath.row]
+        let searchResultCollectionViewBounds = collectionView.bounds
         
-        if currentViewModel is CharacterCollectionViewCellViewModel {
+        if currentSearchResultViewModel is CharacterCollectionViewCellViewModel {
             
-            let width = UIDevice.isiPhone ? (bounds.width-30)/2 : (bounds.width-50)/4
-            return CGSize(
-                width: width,
-                height: width * 1.5
-            )
+            let searchResultWidth = UIDevice.checkIfItIsPhoneDevice ? (searchResultCollectionViewBounds.width-30)/2 : (searchResultCollectionViewBounds.width-50)/4
+            
+            return CGSize(width: searchResultWidth, height: searchResultWidth * 1.5)
         }
         
-        let width = UIDevice.isiPhone ? bounds.width-20 : (bounds.width-50) / 4
-        return CGSize(
-            width: width,
-            height: 100
-        )
+        let searchResultWidth = UIDevice.checkIfItIsPhoneDevice ? searchResultCollectionViewBounds.width-20 : (searchResultCollectionViewBounds.width-50) / 4
+        
+        return CGSize(width: searchResultWidth, height: 100)
     }
     
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        guard kind == UICollectionView.elementKindSectionFooter,
-              let footer = collectionView.dequeueReusableSupplementaryView(
-                ofKind: kind,
-                withReuseIdentifier: FooterLoadingCollectionReusableView.identifier,
-                for: indexPath
+    func collectionView(_ searchResultCollectionView: UICollectionView, viewForSupplementaryElementOfKind searchResultElementKindSectionFooter: String, at searchResultIndexPath: IndexPath) -> UICollectionReusableView {
+        guard searchResultElementKindSectionFooter == UICollectionView.elementKindSectionFooter,
+              let searchResultFooter = searchResultCollectionView.dequeueReusableSupplementaryView(
+                ofKind: searchResultElementKindSectionFooter,
+                withReuseIdentifier: FooterLoadingCollectionReusableView.footerLoadingCollectionIdentifier,
+                for: searchResultIndexPath
               ) as? FooterLoadingCollectionReusableView else {
             fatalError("Unsupported")
         }
-        if let viewModel = viewModel, viewModel.shouldShowLoadMoreIndicator {
-            footer.startAnimating()
+        
+        if let searchResultViewModel = searchResultViewModel, searchResultViewModel.searchResultLoadingIndicator {
+            searchResultFooter.footerLoadingCollectionAnimating()
         }
-        return footer
+        
+        return searchResultFooter
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
-        guard let viewModel = viewModel,
-              viewModel.shouldShowLoadMoreIndicator else {
+    func collectionView(_ searchResultCollectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
+        guard let searchResultViewModel = searchResultViewModel,
+              searchResultViewModel.searchResultLoadingIndicator else {
             return .zero
         }
         
-        return CGSize(width: collectionView.frame.width,
+        return CGSize(width: searchResultCollectionView.frame.width,
                       height: 100)
     }
 }
 
 extension SearchResultsView: UIScrollViewDelegate {
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        if !locationCellViewModels.isEmpty {
-            handleLocationPagination(scrollView: scrollView)
+    func scrollViewDidScroll(_ searchResultScrollView: UIScrollView) {
+        if !searchResultLocationCellViewModels.isEmpty {
+            searchResultlocationHandler(searchResultScrollView: searchResultScrollView)
         } else {
-            handleCharacterOrEpisodePagination(scrollView: scrollView)
+            searchResultHandlerForCharactersAndEpisodes(searchResultScrollView: searchResultScrollView)
         }
     }
     
-    private func handleCharacterOrEpisodePagination(scrollView: UIScrollView) {
-        guard let viewModel = viewModel,
-              !collectionViewCellViewModels.isEmpty,
-              viewModel.shouldShowLoadMoreIndicator,
-              !viewModel.isLoadingMoreResults else {
+    private func searchResultHandlerForCharactersAndEpisodes(searchResultScrollView: UIScrollView) {
+        guard let searchResultViewModel = searchResultViewModel,
+              !searchResultCollectionViewCellViewModels.isEmpty,
+              searchResultViewModel.searchResultLoadingIndicator,
+              !searchResultViewModel.searchResultsLoading else {
             return
         }
         
         Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false) { [weak self] t in
-            let offset = scrollView.contentOffset.y
-            let totalContentHeight = scrollView.contentSize.height
-            let totalScrollViewFixedHeight = scrollView.frame.size.height
+            let searchResultOffset = searchResultScrollView.contentOffset.y
+            let searchResultTotalContentHeight = searchResultScrollView.contentSize.height
+            let searchResultTotalScrollViewFixedHeight = searchResultScrollView.frame.size.height
             
-            if offset >= (totalContentHeight - totalScrollViewFixedHeight - 120) {
-                viewModel.fetchAdditionalResults { [weak self] newResults in
-                    guard let strongSelf = self else {
+            if searchResultOffset >= (searchResultTotalContentHeight - searchResultTotalScrollViewFixedHeight - 120) {
+                searchResultViewModel.downloadAdditionalSearchResults { [weak self] newSearchResults in
+                    guard let searchResultStrongSelf = self else {
                         return
                     }
                     
                     DispatchQueue.main.async {
-                        strongSelf.tableView.tableFooterView = nil
+                        searchResultStrongSelf.searchResultTableView.tableFooterView = nil
                         
-                        let originalCount = strongSelf.collectionViewCellViewModels.count
-                        let newCount = (newResults.count - originalCount)
-                        let total = originalCount + newCount
-                        let startingIndex = total - newCount
-                        let indexPathsToAdd: [IndexPath] = Array(startingIndex..<(startingIndex+newCount)).compactMap({
+                        let searchResultOriginalCount = searchResultStrongSelf.searchResultCollectionViewCellViewModels.count
+                        let searchResultNewCount = (newSearchResults.count - searchResultOriginalCount)
+                        let totalSearchResult = searchResultOriginalCount + searchResultNewCount
+                        let startingIndexSearchResult = totalSearchResult - searchResultNewCount
+                        let searchResultIndexPathsToAdd: [IndexPath] = Array(startingIndexSearchResult..<(startingIndexSearchResult+searchResultNewCount)).compactMap({
                             return IndexPath(row: $0, section: 0)
                         })
-                        strongSelf.collectionViewCellViewModels = newResults
-                        strongSelf.collectionView.insertItems(at: indexPathsToAdd)
+                        searchResultStrongSelf.searchResultCollectionViewCellViewModels = newSearchResults
+                        searchResultStrongSelf.searchResultCollectionView.insertItems(at: searchResultIndexPathsToAdd)
                     }
                 }
             }
@@ -272,35 +276,36 @@ extension SearchResultsView: UIScrollViewDelegate {
         }
     }
     
-    private func handleLocationPagination(scrollView: UIScrollView) {
-        guard let viewModel = viewModel,
-              !locationCellViewModels.isEmpty,
-              viewModel.shouldShowLoadMoreIndicator,
-              !viewModel.isLoadingMoreResults else {
+    private func searchResultlocationHandler(searchResultScrollView: UIScrollView) {
+        guard let searchResultViewModel = searchResultViewModel,
+              !searchResultLocationCellViewModels.isEmpty,
+              searchResultViewModel.searchResultLoadingIndicator,
+              !searchResultViewModel.searchResultsLoading else {
             return
         }
         
         Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false) { [weak self] t in
-            let offset = scrollView.contentOffset.y
-            let totalContentHeight = scrollView.contentSize.height
-            let totalScrollViewFixedHeight = scrollView.frame.size.height
+            let searchResultOffset = searchResultScrollView.contentOffset.y
+            let searchResultTotalContentHeight = searchResultScrollView.contentSize.height
+            let searchResultTotalScrollViewFixedHeight = searchResultScrollView.frame.size.height
             
-            if offset >= (totalContentHeight - totalScrollViewFixedHeight - 120) {
+            if searchResultOffset >= (searchResultTotalContentHeight - searchResultTotalScrollViewFixedHeight - 120) {
                 DispatchQueue.main.async {
-                    self?.showTableLoadingIndicator()
+                    self?.showSearchResultTableLoadingIndicator()
                 }
-                viewModel.fetchAdditionalLocations { [weak self] newResults in
-                    self?.tableView.tableFooterView = nil
-                    self?.locationCellViewModels = newResults
-                    self?.tableView.reloadData()
+                
+                searchResultViewModel.downloadAdditionalSearchResults { [weak self] newSearchResults in
+                    self?.searchResultTableView.tableFooterView = nil
+                    self?.searchResultLocationCellViewModels = newSearchResults
+                    self?.searchResultTableView.reloadData()
                 }
             }
             t.invalidate()
         }
     }
     
-    private func showTableLoadingIndicator() {
-        let footer = TableLoadingFooterView(frame: CGRect(x: 0, y: 0, width: frame.size.width, height: 100))
-        tableView.tableFooterView = footer
+    private func showSearchResultTableLoadingIndicator() {
+        let searchResultFooter = TableLoadingFooterView(frame: CGRect(x: 0, y: 0, width: frame.size.width, height: 100))
+        searchResultTableView.tableFooterView = searchResultFooter
     }
 }

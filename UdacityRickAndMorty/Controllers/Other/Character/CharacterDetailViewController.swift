@@ -2,12 +2,12 @@ import UIKit
 
 final class CharacterDetailViewController: UIViewController {
     
-    private let viewModel: CharacterDetailViewModel
-    private let detailView: CharacterDetailView
+    private let charachterDetailViewModel: CharacterDetailViewModel
+    private let charachterDetailView: CharacterDetailView
     
     init(viewModel: CharacterDetailViewModel) {
-        self.viewModel = viewModel
-        self.detailView = CharacterDetailView(frame: .zero, viewModel: viewModel)
+        self.charachterDetailViewModel = viewModel
+        self.charachterDetailView = CharacterDetailView(frame: .zero, viewModel: viewModel)
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -18,93 +18,105 @@ final class CharacterDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        title = viewModel.title
-        view.addSubview(detailView)
+        title = charachterDetailViewModel.characterDetailName
+        view.addSubview(charachterDetailView)
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .action,
             target: self,
-            action: #selector(tapShare)
+            action: #selector(tapCharacterDetailShareButton)
         )
-        addConstraints()
-
-        detailView.collectionView?.delegate = self
-        detailView.collectionView?.dataSource = self
+        
+        addCharachterDetailConstraints()
+        charachterDetailView.characterDetailCollectionView?.delegate = self
+        charachterDetailView.characterDetailCollectionView?.dataSource = self
     }
 
     @objc
-    private func tapShare() {}
+    private func tapCharacterDetailShareButton() {}
 
-    private func addConstraints() {
+    private func addCharachterDetailConstraints() {
         NSLayoutConstraint.activate([
-            detailView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            detailView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
-            detailView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
-            detailView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            charachterDetailView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            charachterDetailView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
+            charachterDetailView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
+            charachterDetailView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
     }
 }
 
 extension CharacterDetailViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return viewModel.sections.count
+        return charachterDetailViewModel.characterSections.count
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let sectionType = viewModel.sections[section]
-        switch sectionType {
-        case .photo:
+        let charachterDetailSectionType = charachterDetailViewModel.characterSections[section]
+        
+        switch charachterDetailSectionType {
+        case .characterPhotoSection:
             return 1
-        case .information(let viewModels):
-            return viewModels.count
-        case .episodes(let viewModels):
-            return viewModels.count
+        case .characterInformationSection(let characterInformationViewModels):
+            return characterInformationViewModels.count
+        case .characterEpisodeSection(let characterEpisodeViewModels):
+            return characterEpisodeViewModels.count
         }
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let sectionType = viewModel.sections[indexPath.section]
-        switch sectionType {
-        case .photo(let viewModel):
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: CharacterPhotoCollectionViewCell.cellIdentifier,
+        let charachterDetailSectionType = charachterDetailViewModel.characterSections[indexPath.section]
+        
+        switch charachterDetailSectionType {
+        case .characterPhotoSection(let characterPhotoSectionViewModel):
+            guard let charachterDetailCell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: CharacterPhotoCollectionViewCell.reuseCellIdentifier,
                 for: indexPath
             ) as? CharacterPhotoCollectionViewCell else {
                 fatalError()
             }
-            cell.configure(with: viewModel)
-            return cell
-        case .information(let viewModels):
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: CharacterInfoCollectionViewCell.cellIdentifier,
+            
+            charachterDetailCell.characterPhotoCollectionConfiguration(with: characterPhotoSectionViewModel)
+            
+            return charachterDetailCell
+        
+        case .characterInformationSection(let charachterInformationViewModels):
+            guard let charachterDetailCell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: CharacterInfoCollectionViewCell.reuseCellIdentifier,
                 for: indexPath
             ) as? CharacterInfoCollectionViewCell else {
                 fatalError()
             }
-            cell.configure(with: viewModels[indexPath.row])
-            return cell
-        case .episodes(let viewModels):
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifier,
+            
+            charachterDetailCell.characterInformationCollectionConfiguration(with: charachterInformationViewModels[indexPath.row])
+            
+            return charachterDetailCell
+        
+        case .characterEpisodeSection(let characterEpisodeViewModels):
+            guard let charachterEpisodeCell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: CharacterEpisodeCollectionViewCell.resueCellIdentifier,
                 for: indexPath
             ) as? CharacterEpisodeCollectionViewCell else {
                 fatalError()
             }
-            let viewModel = viewModels[indexPath.row]
-            cell.configure(with: viewModel)
-            return cell
+            
+            let charachterEpisodeViewModels = characterEpisodeViewModels[indexPath.row]
+            
+            charachterEpisodeCell.characterEpisodeCollectionViewConfiguration(with: charachterEpisodeViewModels)
+            
+            return charachterEpisodeCell
         }
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let sectionType = viewModel.sections[indexPath.section]
-        switch sectionType {
-        case .photo, .information:
+        let charachterDetailSectionType = charachterDetailViewModel.characterSections[indexPath.section]
+        
+        switch charachterDetailSectionType {
+        case .characterPhotoSection, .characterInformationSection:
             break
-        case .episodes:
-            let episodes = self.viewModel.episodes
-            let selection = episodes[indexPath.row]
-            let vc = EpisodeDetailViewController(url: URL(string: selection))
-            navigationController?.pushViewController(vc, animated: true)
+        case .characterEpisodeSection:
+            let charachterDetailEpisodes = self.charachterDetailViewModel.characterDetailEpisodes
+            let charachterDetailSelection = charachterDetailEpisodes[indexPath.row]
+            let charachterDetailViewController = EpisodeDetailViewController(url: URL(string: charachterDetailSelection))
+            navigationController?.pushViewController(charachterDetailViewController, animated: true)
         }
     }
 }

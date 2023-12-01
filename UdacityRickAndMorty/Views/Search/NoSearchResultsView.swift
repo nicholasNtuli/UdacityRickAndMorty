@@ -2,61 +2,61 @@ import UIKit
 
 final class NoSearchResultsView: UIView {
 
-    private let viewModel = NoneReturenedViewModel()
+    private let noSearchResultsViewModel = NoSearchViewBeingReturned()
 
-    private let iconView: UIImageView = {
-        let iconView = UIImageView()
-        iconView.contentMode = .scaleAspectFit
-        iconView.tintColor = .systemBlue
-        iconView.translatesAutoresizingMaskIntoConstraints = false
-        return iconView
+    private let noSearchResultsIconView: UIImageView = {
+        let noSearchResultsIconView = UIImageView()
+        noSearchResultsIconView.contentMode = .scaleAspectFit
+        noSearchResultsIconView.tintColor = .systemBlue
+        noSearchResultsIconView.translatesAutoresizingMaskIntoConstraints = false
+        return noSearchResultsIconView
     }()
 
-    private let label: UILabel = {
-        let label = UILabel()
-        label.textAlignment = .center
-        label.font = .systemFont(ofSize: 20, weight: .medium)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
+    private let noSearchResultsLabel: UILabel = {
+        let noSearchResultsLabel = UILabel()
+        noSearchResultsLabel.textAlignment = .center
+        noSearchResultsLabel.font = .systemFont(ofSize: 20, weight: .medium)
+        noSearchResultsLabel.translatesAutoresizingMaskIntoConstraints = false
+        return noSearchResultsLabel
     }()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        configureView()
-        setupSubviews()
-        setupConstraints()
-        configure()
+        noSearchResultsConfigurationView()
+        setupNoSearchResultsSubviews()
+        setupNoSearchResultsConstraints()
+        noSearchResultsConfiguration()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func configureView() {
+    private func noSearchResultsConfigurationView() {
         isHidden = true
         translatesAutoresizingMaskIntoConstraints = false
     }
 
-    private func setupSubviews() {
-        addSubviews(iconView, label)
+    private func setupNoSearchResultsSubviews() {
+        addCharacterDetailLoadingIndicatorSubviews(noSearchResultsIconView, noSearchResultsLabel)
     }
 
-    private func setupConstraints() {
+    private func setupNoSearchResultsConstraints() {
         NSLayoutConstraint.activate([
-            iconView.widthAnchor.constraint(equalToConstant: 90),
-            iconView.heightAnchor.constraint(equalToConstant: 90),
-            iconView.topAnchor.constraint(equalTo: topAnchor),
-            iconView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            noSearchResultsIconView.widthAnchor.constraint(equalToConstant: 90),
+            noSearchResultsIconView.heightAnchor.constraint(equalToConstant: 90),
+            noSearchResultsIconView.topAnchor.constraint(equalTo: topAnchor),
+            noSearchResultsIconView.centerXAnchor.constraint(equalTo: centerXAnchor),
 
-            label.leftAnchor.constraint(equalTo: leftAnchor),
-            label.rightAnchor.constraint(equalTo: rightAnchor),
-            label.bottomAnchor.constraint(equalTo: bottomAnchor),
-            label.topAnchor.constraint(equalTo: iconView.bottomAnchor, constant: 10),
+            noSearchResultsLabel.leftAnchor.constraint(equalTo: leftAnchor),
+            noSearchResultsLabel.rightAnchor.constraint(equalTo: rightAnchor),
+            noSearchResultsLabel.bottomAnchor.constraint(equalTo: bottomAnchor),
+            noSearchResultsLabel.topAnchor.constraint(equalTo: noSearchResultsIconView.bottomAnchor, constant: 10),
         ])
     }
 
-    private func configure() {
-        label.text = viewModel.title
-        iconView.image = viewModel.image
+    private func noSearchResultsConfiguration() {
+        noSearchResultsLabel.text = noSearchResultsViewModel.noSearchViewTitle
+        noSearchResultsIconView.image = noSearchResultsViewModel.noSearchViewImage
     }
 }

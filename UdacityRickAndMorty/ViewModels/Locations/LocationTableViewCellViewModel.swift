@@ -2,28 +2,28 @@ import Foundation
 
 struct LocationTableViewCellViewModel: Hashable, Equatable {
 
-    let location: Location
+    let locationTable: Location
 
-    var name: String {
-        location.name
+    var locationName: String {
+        locationTable.name
     }
 
-    var type: String {
-        "Type: \(location.type)"
+    var locationType: String {
+        "Type: \(locationTable.type)"
     }
 
-    var dimension: String {
-        location.dimension
+    var locationDimension: String {
+        locationTable.dimension
     }
 
     static func == (lhs: LocationTableViewCellViewModel, rhs: LocationTableViewCellViewModel) -> Bool {
-        lhs.location.id == rhs.location.id
+        lhs.locationTable.id == rhs.locationTable.id
     }
 
     func hash(into hasher: inout Hasher) {
-        hasher.combine(name)
-        hasher.combine(location.id)
-        hasher.combine(dimension)
-        hasher.combine(type)
+        hasher.combine(locationName)
+        hasher.combine(locationTable.id)
+        hasher.combine(locationDimension)
+        hasher.combine(locationType)
     }
 }

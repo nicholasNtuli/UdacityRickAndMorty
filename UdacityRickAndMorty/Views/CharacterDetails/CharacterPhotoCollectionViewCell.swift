@@ -2,46 +2,46 @@ import UIKit
 
 final class CharacterPhotoCollectionViewCell: UICollectionViewCell {
     
-    static let cellIdentifier = "CharacterPhotoCollectionViewCell"
+    static let reuseCellIdentifier = "CharacterPhotoCollectionViewCell"
 
-    private let imageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        return imageView
+    private let characterPhotoCollectionImageView: UIImageView = {
+        let characterPhotoCollectionImageView = UIImageView()
+        characterPhotoCollectionImageView.contentMode = .scaleAspectFill
+        characterPhotoCollectionImageView.clipsToBounds = true
+        characterPhotoCollectionImageView.translatesAutoresizingMaskIntoConstraints = false
+        return characterPhotoCollectionImageView
     }()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        contentView.addSubview(imageView)
-        setUpConstraints()
+        contentView.addSubview(characterPhotoCollectionImageView)
+        characterPhotoCollectionConstraintsSetup()
     }
 
     required init?(coder: NSCoder) {
         fatalError()
     }
 
-    private func setUpConstraints() {
+    private func characterPhotoCollectionConstraintsSetup() {
         NSLayoutConstraint.activate([
-            imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            imageView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
-            imageView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
-            imageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            characterPhotoCollectionImageView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            characterPhotoCollectionImageView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
+            characterPhotoCollectionImageView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
+            characterPhotoCollectionImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
         ])
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        imageView.image = nil
+        characterPhotoCollectionImageView.image = nil
     }
 
-    public func configure(with viewModel: CharacterPhotoCollectionViewCellViewModel) {
-        viewModel.fetchImage { [weak self] result in
-            switch result {
-            case .success(let data):
+    public func characterPhotoCollectionConfiguration(with characterPhotoCollectionViewModel: CharacterPhotoSectionViewModel) {
+        characterPhotoCollectionViewModel.downloadCharacterPhoto { [weak self] characterPhotoCollectionResult in
+            switch characterPhotoCollectionResult {
+            case .success(let characterPhotoCollectionData):
                 DispatchQueue.main.async {
-                    self?.imageView.image = UIImage(data: data)
+                    self?.characterPhotoCollectionImageView.image = UIImage(data: characterPhotoCollectionData)
                 }
             case .failure:
                 break

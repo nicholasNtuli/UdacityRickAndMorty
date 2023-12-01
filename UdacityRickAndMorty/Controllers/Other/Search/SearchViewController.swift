@@ -2,18 +2,18 @@ import UIKit
 
 final class SearchViewController: UIViewController {
     
-    private let viewModel: SearchViewModel
-    private lazy var searchView: SearchView = {
-        return SearchView(frame: .zero, viewModel: viewModel)
+    private let serachViewModel: SearchViewModel
+    private lazy var searchingView: SearchingView = {
+        return SearchingView(frame: .zero, viewModel: serachViewModel)
     }()
     
-    struct Config {
+    struct SearchViewControllerConfiguration {
         enum `Type` {
             case character
             case episode
             case location
 
-            var endpoint: APIEndpoint {
+            var searchViewAPIndpoint: APIEndpoint {
                 switch self {
                 case .character: return .character
                 case .episode: return .episode
@@ -21,7 +21,7 @@ final class SearchViewController: UIViewController {
                 }
             }
 
-            var title: String {
+            var searchViewTitle: String {
                 switch self {
                 case .character: return "Search Characters"
                 case .location: return "Search Location"
@@ -30,12 +30,12 @@ final class SearchViewController: UIViewController {
             }
         }
 
-        let type: `Type`
+        let searchViewType: `Type`
     }
     
-    init(config: Config) {
-        let viewModel = SearchViewModel(config: config)
-        self.viewModel = viewModel
+    init(config: SearchViewControllerConfiguration) {
+        let searchViewModel = SearchViewModel(searchViewConfiguration: config)
+        self.serachViewModel = searchViewModel
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -45,72 +45,80 @@ final class SearchViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupUI()
+        searchViewUISetup()
     }
 
-    private func setupUI() {
-        title = viewModel.config.type.title
+    private func searchViewUISetup() {
+        title = serachViewModel.searchViewConfiguration.searchViewType.searchViewTitle
         view.backgroundColor = .systemBackground
-        setupSearchView()
-        addConstraints()
-        setupNavigationBar()
+        searchViewSetup()
+        addSearchViewConstraints()
+        searchViewNavigationBarSetup()
     }
 
-    private func setupSearchView() {
-        view.addSubview(searchView)
-        searchView.delegate = self
+    private func searchViewSetup() {
+        view.addSubview(searchingView)
+        searchingView.searchViewDelegate = self
     }
 
-    private func setupNavigationBar() {
+    private func searchViewNavigationBarSetup() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: "Search",
+            title: "Start typing to search",
             style: .done,
             target: self,
-            action: #selector(didTapExecuteSearch)
+            action: #selector(searchExecuted)
         )
     }
 
-    @objc private func didTapExecuteSearch() {
-        viewModel.executeSearch()
+    @objc private func searchExecuted() {
+        serachViewModel.executeSearchForSearchView()
     }
 
-    private func addConstraints() {
+    private func addSearchViewConstraints() {
         NSLayoutConstraint.activate([
-            searchView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            searchView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
-            searchView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
-            searchView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            searchingView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            searchingView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
+            searchingView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
+            searchingView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
     }
 }
 
 extension SearchViewController: SearchViewDelegate {
-    func searchView(_ searchView: SearchView, selectOption option: SearchInputViewModel.DynamicOption) {
-        let vc = SearchOptionPickerViewController(option: option) { [weak self] selection in
+    func searchViewSectiOption(_ searchView: SearchingView, selectOption searchViewOption: SearchInputViewModel.SearchInputConstants) {
+        let searchViewController = SearchOptionPickerViewController(option: searchViewOption) { [weak self] searchViewSelection in
             DispatchQueue.main.async {
-                self?.viewModel.set(value: selection, for: option)
+                self?.serachViewModel.setSearchViewMapping(value: searchViewSelection, for: searchViewOption)
             }
         }
-        vc.sheetPresentationController?.detents = [.medium()]
-        vc.sheetPresentationController?.prefersGrabberVisible = true
-        present(vc, animated: true)
+        
+        searchViewController.sheetPresentationController?.detents = [.medium()]
+        searchViewController.sheetPresentationController?.prefersGrabberVisible = true
+        
+        present(searchViewController, animated: true)
     }
 
-    func searchView(_ searchView: SearchView, selectLocation location: Location) {
-        let vc = LocationDetailViewController(location: location)
-        vc.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(vc, animated: true)
+    func searchViewSelctLocation(_ searchView: SearchingView, selectLocation searchViewLocation: Location) {
+        let searchViewController = LocationDetailViewController(location: searchViewLocation)
+        
+        searchViewController.navigationItem.largeTitleDisplayMode = .never
+        
+        navigationController?.pushViewController(searchViewController, animated: true)
     }
 
-    func searchView(_ searchView: SearchView, selectCharacter character: Character) {
-        let vc = CharacterDetailViewController(viewModel: .init(character: character))
-        vc.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(vc, animated: true)
+    func searchViewSelectCharacter(_ searchView: SearchingView, selectCharacter searchViewCharacter: Character) {
+        let searchViewController = CharacterDetailViewController(viewModel: .init(characterDetail: searchViewCharacter))
+        
+        searchViewController.navigationItem.largeTitleDisplayMode = .never
+        
+        navigationController?.pushViewController(searchViewController, animated: true)
     }
 
-    func searchView(_ searchView: SearchView, selectEpisode episode: Episode) {
-        let vc = EpisodeDetailViewController(url: URL(string: episode.url))
-        vc.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(vc, animated: true)
+    func searchViewSelectEpisode(_ searchView: SearchingView, selectEpisode searchViewEpisode: Episode) {
+        let searchViewController = EpisodeDetailViewController(url: URL(string: searchViewEpisode.url))
+        
+        searchViewController.navigationItem.largeTitleDisplayMode = .never
+        
+        navigationController?.pushViewController(searchViewController, animated: true)
     }
 }

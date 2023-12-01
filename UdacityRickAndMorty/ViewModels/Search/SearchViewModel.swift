@@ -2,140 +2,140 @@ import Foundation
 
 final class SearchViewModel {
     
-    private var optionMap: [SearchInputViewModel.DynamicOption: String] = [:]
+    private var SearchVieMapping: [SearchInputViewModel.SearchInputConstants: String] = [:]
     private var searchText = ""
-    private var optionMapUpdateBlock: (((SearchInputViewModel.DynamicOption, String)) -> Void)?
-    private var searchResultHandler: ((SearchResultViewModel) -> Void)?
-    private var noResultsHandler: (() -> Void)?
-    private var searchResultModel: Codable?
+    private var updatedMapForSearchView: (((SearchInputViewModel.SearchInputConstants, String)) -> Void)?
+    private var searchViewHandler: ((SearchResultViewModel) -> Void)?
+    private var noSearchViewFoundHandler: (() -> Void)?
+    private var searchViewResultModel: Codable?
     
-    let config: SearchViewController.Config
+    let searchViewConfiguration: SearchViewController.SearchViewControllerConfiguration
     
-    init(config: SearchViewController.Config) {
-        self.config = config
+    init(searchViewConfiguration: SearchViewController.SearchViewControllerConfiguration) {
+        self.searchViewConfiguration = searchViewConfiguration
     }
     
-    public func registerSearchResultHandler(_ block: @escaping (SearchResultViewModel) -> Void) {
-        searchResultHandler = block
+    public func searchViewHandlerRegister(_ block: @escaping (SearchResultViewModel) -> Void) {
+        searchViewHandler = block
     }
     
-    public func registerNoResultsHandler(_ block: @escaping () -> Void) {
-        noResultsHandler = block
+    public func searchViewNoResultsHandlerRegister(_ block: @escaping () -> Void) {
+        noSearchViewFoundHandler = block
     }
     
-    public func executeSearch() {
+    public func executeSearchForSearchView() {
         guard !searchText.trimmingCharacters(in: .whitespaces).isEmpty else {
             return
         }
         
-        let queryParams = buildQueryParameters()
-        let request = APIRequest(endpoint: config.type.endpoint, queryParameters: queryParams)
+        let searchViewQueryParams = parametersForSearchViewbuildQuery()
+        let searchViewRequest = APIRequest(endpoint: searchViewConfiguration.searchViewType.searchViewAPIndpoint, queryParameters: searchViewQueryParams)
         
-        switch config.type.endpoint {
+        switch searchViewConfiguration.searchViewType.searchViewAPIndpoint {
         case .character:
-            makeSearchAPICall(CharactersResponse.self, request: request)
+            searchViewAPI(CharactersResponse.self, searchViewRequest: searchViewRequest)
         case .episode:
-            makeSearchAPICall(EpisodesResponse.self, request: request)
+            searchViewAPI(EpisodesResponse.self, searchViewRequest: searchViewRequest)
         case .location:
-            makeSearchAPICall(LocationsResponse.self, request: request)
+            searchViewAPI(LocationsResponse.self, searchViewRequest: searchViewRequest)
         }
     }
     
-    private func buildQueryParameters() -> [URLQueryItem] {
-        var queryParams: [URLQueryItem] = [
+    private func parametersForSearchViewbuildQuery() -> [URLQueryItem] {
+        var searchViewQueryParams: [URLQueryItem] = [
             URLQueryItem(name: "name", value: searchText.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed))
         ]
         
-        queryParams.append(contentsOf: optionMap.compactMap { element in
-            let key = element.key
-            let value = element.value
-            return URLQueryItem(name: key.queryArgument, value: value)
+        searchViewQueryParams.append(contentsOf: SearchVieMapping.compactMap { searchViewElement in
+            let searchViewKey = searchViewElement.key
+            let searchViewValue = searchViewElement.value
+            return URLQueryItem(name: searchViewKey.searchInputQueryArgument, value: searchViewValue)
         })
         
-        return queryParams
+        return searchViewQueryParams
     }
     
-    private func makeSearchAPICall<T: Codable>(_ type: T.Type, request: APIRequest) {
-        APIService.shared.execute(request, expecting: type) { [weak self] result in
-            switch result {
-            case .success(let model):
-                self?.processSearchResults(model: model)
+    private func searchViewAPI<T: Codable>(_ type: T.Type, searchViewRequest: APIRequest) {
+        APIService.shared.execute(searchViewRequest, expecting: type) { [weak self] searchViewResult in
+            switch searchViewResult {
+            case .success(let searchViewModel):
+                self?.searchViewResultProcesor(searchViewModel: searchViewModel)
             case .failure:
-                self?.handleNoResults()
+                self?.noSearchViewResultsFOunderHandler()
             }
         }
     }
     
-    private func processSearchResults(model: Codable) {
-        var resultsVM: SearchResultType?
-        var nextUrl: String?
+    private func searchViewResultProcesor(searchViewModel: Codable) {
+        var searchViewResults: SearchResultType?
+        var nextSearchViewURL: String?
         
-        switch model {
-        case let characterResults as CharactersResponse:
-            resultsVM = .characters(characterResults.results.compactMap {
+        switch searchViewModel {
+        case let searchViewCharacterResults as CharactersResponse:
+            searchViewResults = .characters(searchViewCharacterResults.results.compactMap {
                 CharacterCollectionViewCellViewModel(
-                    characterName: $0.name,
-                    characterStatus: $0.status,
-                    characterImageUrl: URL(string: $0.image)
+                    characterCollectionViewCellCharacterName: $0.name,
+                    characterCollectionViewCellCharacterStatus: $0.status,
+                    characterCollectionViewCellCharacterImageUrl: URL(string: $0.image)
                 )
             })
-            nextUrl = characterResults.info.next
+            nextSearchViewURL = searchViewCharacterResults.info.next
             
-        case let episodesResults as EpisodesResponse:
-            resultsVM = .episodes(episodesResults.results.compactMap {
-                CharacterEpisodeCollectionViewCellViewModel(
-                    episodeDataUrl: URL(string: $0.url)
+        case let searchViewEpisodesResults as EpisodesResponse:
+            searchViewResults = .episodes(searchViewEpisodesResults.results.compactMap {
+                CharacterEpisodeSectionViewModel(
+                    characterEpisodeBaseURL: URL(string: $0.url)
                 )
             })
-            nextUrl = episodesResults.info.next
+            nextSearchViewURL = searchViewEpisodesResults.info.next
             
-        case let locationsResults as LocationsResponse:
-            resultsVM = .locations(locationsResults.results.compactMap {
-                LocationTableViewCellViewModel(location: $0)
+        case let searchViewLocationsResults as LocationsResponse:
+            searchViewResults = .locations(searchViewLocationsResults.results.compactMap {
+                LocationTableViewCellViewModel(locationTable: $0)
             })
-            nextUrl = locationsResults.info.next
+            nextSearchViewURL = searchViewLocationsResults.info.next
         default:
             print("Unexpected response model type")
         }
         
-        if let results = resultsVM {
-            searchResultModel = model
-            let vm = SearchResultViewModel(results: results, next: nextUrl)
-            searchResultHandler?(vm)
+        if let searchViewResults = searchViewResults {
+            searchViewResultModel = searchViewModel
+            let searchViewViewModel = SearchResultViewModel(searchResults: searchViewResults, next: nextSearchViewURL)
+            searchViewHandler?(searchViewViewModel)
         } else {
-            handleNoResults()
+            noSearchViewResultsFOunderHandler()
         }
     }
     
-    private func handleNoResults() {
-        noResultsHandler?()
+    private func noSearchViewResultsFOunderHandler() {
+        noSearchViewFoundHandler?()
     }
     
-    public func set(query text: String) {
+    public func setSearchViewText(query text: String) {
         searchText = text
     }
     
-    public func set(value: String, for option: SearchInputViewModel.DynamicOption) {
-        optionMap[option] = value
-        let tuple = (option, value)
-        optionMapUpdateBlock?(tuple)
+    public func setSearchViewMapping(value: String, for option: SearchInputViewModel.SearchInputConstants) {
+        SearchVieMapping[option] = value
+        let searchViewData = (option, value)
+        updatedMapForSearchView?(searchViewData)
     }
     
-    public func registerOptionChangeBlock(
-        _ block: @escaping ((SearchInputViewModel.DynamicOption, String)) -> Void
+    public func searchViewOptionRegisterHander(
+        _ block: @escaping ((SearchInputViewModel.SearchInputConstants, String)) -> Void
     ) {
-        optionMapUpdateBlock = block
+        updatedMapForSearchView = block
     }
     
-    public func locationSearchResult(at index: Int) -> Location? {
-        (searchResultModel as? LocationsResponse)?.results[index]
+    public func searchViewLocationResults(at index: Int) -> Location? {
+        (searchViewResultModel as? LocationsResponse)?.results[index]
     }
     
-    public func characterSearchResult(at index: Int) -> Character? {
-        (searchResultModel as? CharactersResponse)?.results[index]
+    public func searchViewCharacterResults(at index: Int) -> Character? {
+        (searchViewResultModel as? CharactersResponse)?.results[index]
     }
     
-    public func episodeSearchResult(at index: Int) -> Episode? {
-        (searchResultModel as? EpisodesResponse)?.results[index]
+    public func searchViewEpisodeResults(at index: Int) -> Episode? {
+        (searchViewResultModel as? EpisodesResponse)?.results[index]
     }
 }

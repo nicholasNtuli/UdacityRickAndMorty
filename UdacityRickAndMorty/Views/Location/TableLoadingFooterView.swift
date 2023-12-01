@@ -2,34 +2,34 @@ import UIKit
 
 final class TableLoadingFooterView: UIView {
 
-    private let spinner: UIActivityIndicatorView = {
-        let spinner = UIActivityIndicatorView()
-        spinner.translatesAutoresizingMaskIntoConstraints = false
-        spinner.hidesWhenStopped = true
-        return spinner
+    private let tableLoadingFooterViewLoadingIndicator: UIActivityIndicatorView = {
+        let tableLoadingFooterViewLoadingIndicator = UIActivityIndicatorView()
+        tableLoadingFooterViewLoadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        tableLoadingFooterViewLoadingIndicator.hidesWhenStopped = true
+        return tableLoadingFooterViewLoadingIndicator
     }()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        configureUI()
-        addConstraints()
+        tableLoadingFooterViewUIConfiguration()
+        addTableLoadingFooterViewConstraints()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func configureUI() {
-        addSubview(spinner)
-        spinner.startAnimating()
+    private func tableLoadingFooterViewUIConfiguration() {
+        addSubview(tableLoadingFooterViewLoadingIndicator)
+        tableLoadingFooterViewLoadingIndicator.startAnimating()
     }
 
-    private func addConstraints() {
+    private func addTableLoadingFooterViewConstraints() {
         NSLayoutConstraint.activate([
-            spinner.widthAnchor.constraint(equalToConstant: 55),
-            spinner.heightAnchor.constraint(equalToConstant: 55),
-            spinner.centerXAnchor.constraint(equalTo: centerXAnchor),
-            spinner.centerYAnchor.constraint(equalTo: centerYAnchor),
+            tableLoadingFooterViewLoadingIndicator.widthAnchor.constraint(equalToConstant: 55),
+            tableLoadingFooterViewLoadingIndicator.heightAnchor.constraint(equalToConstant: 55),
+            tableLoadingFooterViewLoadingIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
+            tableLoadingFooterViewLoadingIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
     }
 }

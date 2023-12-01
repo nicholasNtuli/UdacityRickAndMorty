@@ -2,12 +2,12 @@ import UIKit
 
 final class LocationDetailViewController: UIViewController {
 
-    private let viewModel: LocationDetailViewModel
-    private let detailView = LocationDetailView()
+    private let locationDetailViewModel: LocationDetailViewModel
+    private let locationDetailView = LocationDetailView()
 
     init(location: Location) {
-        let url = URL(string: location.url)
-        self.viewModel = LocationDetailViewModel(endpointUrl: url)
+        let locationDetailURL = URL(string: location.url)
+        self.locationDetailViewModel = LocationDetailViewModel(locationDetailEndpointURL: locationDetailURL)
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -17,56 +17,56 @@ final class LocationDetailViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupUI()
-        fetchData()
+        locationDetailUISetup()
+        fetchLocationDetailData()
     }
 
-    private func setupUI() {
+    private func locationDetailUISetup() {
         view.backgroundColor = .systemBackground
-        setupDetailView()
-        setupNavigationBar()
-        addConstraints()
+        setupLocationDetaillView()
+        locationDetailNavigationBarSetup()
+        addLocationDetailConstraints()
     }
 
-    private func setupDetailView() {
-        view.addSubview(detailView)
-        detailView.delegate = self
+    private func setupLocationDetaillView() {
+        view.addSubview(locationDetailView)
+        locationDetailView.locationDetailDelegate = self
     }
 
-    private func setupNavigationBar() {
+    private func locationDetailNavigationBarSetup() {
         title = "Location"
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(tapShare))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(tapLocationDetailShareButton))
     }
 
-    private func addConstraints() {
+    private func addLocationDetailConstraints() {
         NSLayoutConstraint.activate([
-            detailView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            detailView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
-            detailView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
-            detailView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            locationDetailView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            locationDetailView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
+            locationDetailView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
+            locationDetailView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
     }
 
     @objc
-    private func tapShare() {}
+    private func tapLocationDetailShareButton() {}
 
-    private func fetchData() {
-        viewModel.delegate = self
-        viewModel.fetchLocationData()
+    private func fetchLocationDetailData() {
+        locationDetailViewModel.locationDetailDelegate = self
+        locationDetailViewModel.downloadLocationData()
     }
 }
 
 extension LocationDetailViewController: LocationDetailViewDelegate {
-    func episodeDetailView(_ detailView: LocationDetailView, select character: Character) {
-        let vc = CharacterDetailViewController(viewModel: CharacterDetailViewModel(character: character))
-        vc.title = character.name
-        vc.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(vc, animated: true)
+    func loadLocationDetaiEepisodeDetailView(_ detailView: LocationDetailView, locationDetailSelection character: Character) {
+        let locationDetailCharacterController = CharacterDetailViewController(viewModel: CharacterDetailViewModel(characterDetail: character))
+        locationDetailCharacterController.title = character.name
+        locationDetailCharacterController.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(locationDetailCharacterController, animated: true)
     }
 }
 
 extension LocationDetailViewController: LocationDetailViewModelDelegate {
-    func fetchLocationDetails() {
-        detailView.configure(with: viewModel)
+    func downloadLocationDetails() {
+        locationDetailView.locationDetailConfiguration(with: locationDetailViewModel)
     }
 }

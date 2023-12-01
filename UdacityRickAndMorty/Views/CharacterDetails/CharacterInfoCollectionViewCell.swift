@@ -2,90 +2,91 @@ import UIKit
 
 final class CharacterInfoCollectionViewCell: UICollectionViewCell {
    
-    static let cellIdentifier = "CharacterInfoCollectionViewCell"
+    static let reuseCellIdentifier = "CharacterInfoCollectionViewCell"
 
-    private let valueLabel: UILabel = {
-        let label = UILabel()
-        label.numberOfLines = 0
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = .systemFont(ofSize: 22, weight: .light)
-        return label
+    private let characterInformationCollectionTitleContainerView: UIView = {
+        let characterInformationCollectionTileView = UIView()
+        characterInformationCollectionTileView.translatesAutoresizingMaskIntoConstraints = false
+        characterInformationCollectionTileView.backgroundColor = .secondarySystemBackground
+        return characterInformationCollectionTileView
+    }()
+    
+    private let characterInformationCollectionTitleLabel: UILabel = {
+        let characterInformationCollectionTitleLabel = UILabel()
+        characterInformationCollectionTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        characterInformationCollectionTitleLabel.textAlignment = .center
+        characterInformationCollectionTitleLabel.font = .systemFont(ofSize: 20, weight: .medium)
+        return characterInformationCollectionTitleLabel
+    }()
+   
+    private let characterInformationCollectionValueLabel: UILabel = {
+        let characterInformationCollectionValueLabel = UILabel()
+        characterInformationCollectionValueLabel.numberOfLines = 0
+        characterInformationCollectionValueLabel.translatesAutoresizingMaskIntoConstraints = false
+        characterInformationCollectionValueLabel.font = .systemFont(ofSize: 22, weight: .light)
+        return characterInformationCollectionValueLabel
     }()
 
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.textAlignment = .center
-        label.font = .systemFont(ofSize: 20, weight: .medium)
-        return label
+    private let characterInformationCollectionIconImageView: UIImageView = {
+        let characterInformationCollectionIconImageView = UIImageView()
+        characterInformationCollectionIconImageView.translatesAutoresizingMaskIntoConstraints = false
+        characterInformationCollectionIconImageView.contentMode = .scaleAspectFit
+        return characterInformationCollectionIconImageView
     }()
 
-    private let iconImageView: UIImageView = {
-        let icon = UIImageView()
-        icon.translatesAutoresizingMaskIntoConstraints = false
-        icon.contentMode = .scaleAspectFit
-        return icon
-    }()
-
-    private let titleContainerView: UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = .secondarySystemBackground
-        return view
-    }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         contentView.backgroundColor = .tertiarySystemBackground
         contentView.layer.cornerRadius = 8
         contentView.layer.masksToBounds = true
-        contentView.addSubviews(titleContainerView, valueLabel, iconImageView)
-        titleContainerView.addSubview(titleLabel)
-        setUpConstraints()
+        contentView.addCharacterDetailLoadingIndicatorSubviews(characterInformationCollectionTitleContainerView, characterInformationCollectionValueLabel, characterInformationCollectionIconImageView)
+        characterInformationCollectionTitleContainerView.addSubview(characterInformationCollectionTitleLabel)
+        characterInformationCollectionConstraintsSetup()
     }
 
     required init?(coder: NSCoder) {
         fatalError()
     }
 
-    private func setUpConstraints() {
+    private func characterInformationCollectionConstraintsSetup() {
         NSLayoutConstraint.activate([
-            titleContainerView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
-            titleContainerView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
-            titleContainerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            titleContainerView.heightAnchor.constraint(equalTo: contentView.heightAnchor, multiplier: 0.33),
+            characterInformationCollectionTitleContainerView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
+            characterInformationCollectionTitleContainerView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
+            characterInformationCollectionTitleContainerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            characterInformationCollectionTitleContainerView.heightAnchor.constraint(equalTo: contentView.heightAnchor, multiplier: 0.33),
 
-            titleLabel.leftAnchor.constraint(equalTo: titleContainerView.leftAnchor),
-            titleLabel.rightAnchor.constraint(equalTo: titleContainerView.rightAnchor),
-            titleLabel.topAnchor.constraint(equalTo: titleContainerView.topAnchor),
-            titleLabel.bottomAnchor.constraint(equalTo: titleContainerView.bottomAnchor),
+            characterInformationCollectionTitleLabel.leftAnchor.constraint(equalTo: characterInformationCollectionTitleContainerView.leftAnchor),
+            characterInformationCollectionTitleLabel.rightAnchor.constraint(equalTo: characterInformationCollectionTitleContainerView.rightAnchor),
+            characterInformationCollectionTitleLabel.topAnchor.constraint(equalTo: characterInformationCollectionTitleContainerView.topAnchor),
+            characterInformationCollectionTitleLabel.bottomAnchor.constraint(equalTo: characterInformationCollectionTitleContainerView.bottomAnchor),
 
-            iconImageView.heightAnchor.constraint(equalToConstant: 30),
-            iconImageView.widthAnchor.constraint(equalToConstant: 30),
-            iconImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 35),
-            iconImageView.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 20),
+            characterInformationCollectionIconImageView.heightAnchor.constraint(equalToConstant: 30),
+            characterInformationCollectionIconImageView.widthAnchor.constraint(equalToConstant: 30),
+            characterInformationCollectionIconImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 35),
+            characterInformationCollectionIconImageView.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 20),
 
-            valueLabel.leftAnchor.constraint(equalTo: iconImageView.rightAnchor, constant: 10),
-            valueLabel.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10),
-            valueLabel.topAnchor.constraint(equalTo: contentView.topAnchor),
-            valueLabel.bottomAnchor.constraint(equalTo: titleContainerView.topAnchor)
+            characterInformationCollectionValueLabel.leftAnchor.constraint(equalTo: characterInformationCollectionIconImageView.rightAnchor, constant: 10),
+            characterInformationCollectionValueLabel.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10),
+            characterInformationCollectionValueLabel.topAnchor.constraint(equalTo: contentView.topAnchor),
+            characterInformationCollectionValueLabel.bottomAnchor.constraint(equalTo: characterInformationCollectionTitleContainerView.topAnchor)
         ])
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        valueLabel.text = nil
-        titleLabel.text = nil
-        iconImageView.image = nil
-        iconImageView.tintColor = .label
-        titleLabel.textColor = .label
+        characterInformationCollectionValueLabel.text = nil
+        characterInformationCollectionTitleLabel.text = nil
+        characterInformationCollectionIconImageView.image = nil
+        characterInformationCollectionIconImageView.tintColor = .label
+        characterInformationCollectionTitleLabel.textColor = .label
     }
 
-    public func configure(with viewModel: CharacterDetailCollectionViewCellViewModel) {
-        titleLabel.text = viewModel.title
-        valueLabel.text = viewModel.displayValue
-        iconImageView.image = viewModel.iconImage
-        iconImageView.tintColor = viewModel.tintColor
-        titleLabel.textColor = viewModel.tintColor
+    public func characterInformationCollectionConfiguration(with characterInformationCollectionViewModel: CharacterInformationSectionViewModel) {
+        characterInformationCollectionTitleLabel.text = characterInformationCollectionViewModel.charcterInformationTitle
+        characterInformationCollectionValueLabel.text = characterInformationCollectionViewModel.charcterInformationDisplayValue
+        characterInformationCollectionIconImageView.image = characterInformationCollectionViewModel.charcterInformationIconImage
+        characterInformationCollectionIconImageView.tintColor = characterInformationCollectionViewModel.charcterInformationTintColor
+        characterInformationCollectionTitleLabel.textColor = characterInformationCollectionViewModel.charcterInformationTintColor
     }
 }

@@ -4,35 +4,35 @@ final class TabBarController: UITabBarController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setUpTabs()
+        tabBarViewSetup()
     }
 
-    private struct TabInfo {
-        let title: String
-        let image: UIImage?
-        let viewController: UIViewController
+    private struct TabBarViewInfo {
+        let tabBarTitle: String
+        let tabBarImage: UIImage?
+        let tabBarViewController: UIViewController
     }
 
-    private func setUpTabs() {
-        let charactersVC = CharacterViewController()
-        let locationsVC = LocationViewController()
-        let episodesVC = EpisodeViewController()
+    private func tabBarViewSetup() {
+        let tabBarCharactersViewController = CharacterViewController()
+        let tabBarLocationsViewController = LocationViewController()
+        let tabBarEpisodesViewController = EpisodeViewController()
 
-        let tabs: [TabInfo] = [
-            TabInfo(title: "Characters", image: UIImage(systemName: "person"), viewController: charactersVC),
-            TabInfo(title: "Locations", image: UIImage(systemName: "globe"), viewController: locationsVC),
-            TabInfo(title: "Episodes", image: UIImage(systemName: "tv"), viewController: episodesVC)
+        let tabBarViewInfo: [TabBarViewInfo] = [
+            TabBarViewInfo(tabBarTitle: "Characters", tabBarImage: UIImage(systemName: "person"), tabBarViewController: tabBarCharactersViewController),
+            TabBarViewInfo(tabBarTitle: "Locations", tabBarImage: UIImage(systemName: "globe"), tabBarViewController: tabBarLocationsViewController),
+            TabBarViewInfo(tabBarTitle: "Episodes", tabBarImage: UIImage(systemName: "tv"), tabBarViewController: tabBarEpisodesViewController)
         ]
 
-        tabs.forEach { tabInfo in
-            setUpTab(with: tabInfo)
+        tabBarViewInfo.forEach { tabBarInfo in
+            setUpTab(with: tabBarInfo)
         }
     }
 
-    private func setUpTab(with tabInfo: TabInfo) {
-        let navController = UINavigationController(rootViewController: tabInfo.viewController)
-        navController.tabBarItem = UITabBarItem(title: tabInfo.title, image: tabInfo.image, tag: viewControllers?.count ?? 0 + 1)
-        navController.navigationBar.prefersLargeTitles = true
-        setViewControllers((viewControllers ?? []) + [navController], animated: true)
+    private func setUpTab(with tabBarViewInfo: TabBarViewInfo) {
+        let tabBarNavigationController = UINavigationController(rootViewController: tabBarViewInfo.tabBarViewController)
+        tabBarNavigationController.tabBarItem = UITabBarItem(title: tabBarViewInfo.tabBarTitle, image: tabBarViewInfo.tabBarImage, tag: viewControllers?.count ?? 0 + 1)
+        tabBarNavigationController.navigationBar.prefersLargeTitles = true
+        setViewControllers((viewControllers ?? []) + [tabBarNavigationController], animated: true)
     }
 }

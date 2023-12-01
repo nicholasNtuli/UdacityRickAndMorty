@@ -2,44 +2,44 @@ import UIKit
 
 final class FooterLoadingCollectionReusableView: UICollectionReusableView {
     
-    static let identifier = "FooterLoadingCollectionReusableView"
+    static let footerLoadingCollectionIdentifier = "FooterLoadingCollectionReusableView"
 
-    private let loadingIndicator: UIActivityIndicatorView = {
-        let indicator = UIActivityIndicatorView(style: .large)
-        indicator.hidesWhenStopped = true
-        indicator.translatesAutoresizingMaskIntoConstraints = false
-        return indicator
+    private let footerLoadingCollectionLoadingIndicator: UIActivityIndicatorView = {
+        let footerLoadingCollectionLoadingIndicator = UIActivityIndicatorView(style: .large)
+        footerLoadingCollectionLoadingIndicator.hidesWhenStopped = true
+        footerLoadingCollectionLoadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        return footerLoadingCollectionLoadingIndicator
     }()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        configureView()
-        setupSubviews()
-        setupConstraints()
+        footerLoadingCollectionConfigureView()
+        footerLoadingCollectionSubviewsSetup()
+        footerLoadingCollectionConstraintsSetup()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func configureView() {
+    private func footerLoadingCollectionConfigureView() {
         backgroundColor = .systemBackground
     }
 
-    private func setupSubviews() {
-        addSubview(loadingIndicator)
+    private func footerLoadingCollectionSubviewsSetup() {
+        addSubview(footerLoadingCollectionLoadingIndicator)
     }
 
-    private func setupConstraints() {
+    private func footerLoadingCollectionConstraintsSetup() {
         NSLayoutConstraint.activate([
-            loadingIndicator.widthAnchor.constraint(equalToConstant: 100),
-            loadingIndicator.heightAnchor.constraint(equalToConstant: 100),
-            loadingIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
-            loadingIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
+            footerLoadingCollectionLoadingIndicator.widthAnchor.constraint(equalToConstant: 100),
+            footerLoadingCollectionLoadingIndicator.heightAnchor.constraint(equalToConstant: 100),
+            footerLoadingCollectionLoadingIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
+            footerLoadingCollectionLoadingIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
     }
 
-    public func startAnimating() {
-        loadingIndicator.startAnimating()
+    public func footerLoadingCollectionAnimating() {
+        footerLoadingCollectionLoadingIndicator.startAnimating()
     }
 }

@@ -1,7 +1,7 @@
 import UIKit
 
 protocol EpisodeListViewDelegate: AnyObject {
-    func episodeListView(
+    func episodeListViewController(
         _ characterListView: EpisodeListView,
         selectEpisode episode: Episode
     )
@@ -28,21 +28,21 @@ final class EpisodeListView: UIView {
         collectionView.alpha = 0
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.register(CharacterEpisodeCollectionViewCell.self,
-                                forCellWithReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifier)
+                                forCellWithReuseIdentifier: CharacterEpisodeCollectionViewCell.resueCellIdentifier)
         collectionView.register(FooterLoadingCollectionReusableView.self,
                                 forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter,
-                                withReuseIdentifier: FooterLoadingCollectionReusableView.identifier)
+                                withReuseIdentifier: FooterLoadingCollectionReusableView.footerLoadingCollectionIdentifier)
         return collectionView
     }()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         translatesAutoresizingMaskIntoConstraints = false
-        addSubviews(collectionView, loadingIndicator)
+        addCharacterDetailLoadingIndicatorSubviews(collectionView, loadingIndicator)
         addConstraints()
         loadingIndicator.startAnimating()
-        viewModel.delegate = self
-        viewModel.fetchEpisodes()
+        viewModel.episodeListDelegate = self
+        viewModel.downloadEpisodeList()
         setUpCollectionView()
     }
 
@@ -71,7 +71,7 @@ final class EpisodeListView: UIView {
 }
 
 extension EpisodeListView: EpisodeListViewModelDelegate {
-    func loadInitialEpisodes() {
+    func downloadEpisodeList() {
         loadingIndicator.stopAnimating()
         collectionView.isHidden = false
         collectionView.reloadData()
@@ -80,13 +80,13 @@ extension EpisodeListView: EpisodeListViewModelDelegate {
         }
     }
 
-    func loadMoreEpisodes(with newIndexPaths: [IndexPath]) {
+    func downloadAddtitionalEpisodeToList(with newIndexPaths: [IndexPath]) {
         collectionView.performBatchUpdates {
             self.collectionView.insertItems(at: newIndexPaths)
         }
     }
 
-    func selectEpisode(_ episode: Episode) {
-        delegate?.episodeListView(self, selectEpisode: episode)
+    func episodeListSelection(_ episode: Episode) {
+        delegate?.episodeListViewController(self, selectEpisode: episode)
     }
 }

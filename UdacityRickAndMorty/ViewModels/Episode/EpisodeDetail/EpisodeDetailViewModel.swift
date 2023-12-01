@@ -1,112 +1,110 @@
 import UIKit
 
 protocol EpisodeDetailViewModelDelegate: AnyObject {
-    func fetchEpisodeDetails()
+    func downloadEpisodeDetails()
 }
 
 final class EpisodeDetailViewModel {
-    private let endpointUrl: URL?
-    private var dataTuple: (episode: Episode, characters: [Character])? {
+    private let episodeDetailEndpointURL: URL?
+    private var episodeDetailDataSetup: (episode: Episode, characters: [Character])? {
         didSet {
-            createCellViewModels()
-            delegate?.fetchEpisodeDetails()
+            createEpisodeDetailCellViewModels()
+            episodeDetailDelegate?.downloadEpisodeDetails()
         }
     }
 
-    enum SectionType {
-        case information(viewModels: [EpisodeDetailCollectionViewCellViewModel])
-        case characters(viewModel: [CharacterCollectionViewCellViewModel])
+    enum EpisodeDetailSectionType {
+        case episodeDetailInformation(viewModels: [EpisodeDetailCollectionViewCellViewModel])
+        case episodeDetailCharacters(viewModel: [CharacterCollectionViewCellViewModel])
     }
 
-    weak var delegate: EpisodeDetailViewModelDelegate?
-    private(set) var cellViewModels: [SectionType] = []
+    weak var episodeDetailDelegate: EpisodeDetailViewModelDelegate?
+    private(set) var episodeDetailCellViewModels: [EpisodeDetailSectionType] = []
 
-    init(endpointUrl: URL?) {
-        self.endpointUrl = endpointUrl
+    init(episodeDetailEndpointURL: URL?) {
+        self.episodeDetailEndpointURL = episodeDetailEndpointURL
     }
 
-    func character(at index: Int) -> Character? {
-        dataTuple?.characters[safe: index]
+    func episodeDetailCharacter(at index: Int) -> Character? {
+        episodeDetailDataSetup?.characters[safe: index]
     }
 
-    private func createCellViewModels() {
-        guard let dataTuple = dataTuple else {
+    private func createEpisodeDetailCellViewModels() {
+        guard let episodeDetailDataSetup = episodeDetailDataSetup else {
             return
         }
 
-        let episode = dataTuple.episode
-        let characters = dataTuple.characters
+        let episodeDetail = episodeDetailDataSetup.episode
+        let episodeDetailCharacters = episodeDetailDataSetup.characters
+        let episodeDetailString = formattedDateString(from: episodeDetail.created)
 
-        let createdString = formattedDateString(from: episode.created)
-
-        cellViewModels = [
-            .information(viewModels: [
-                .init(title: "Episode Name", value: episode.name),
-                .init(title: "Air Date", value: episode.air_date),
-                .init(title: "Episode", value: episode.episode),
-                .init(title: "Created", value: createdString),
+        episodeDetailCellViewModels = [
+            .episodeDetailInformation(viewModels: [
+                .init(episodeDetailCollectionViewCellTitle: "Episode Name", episodeDetailCollectionViewCellValue: episodeDetail.name),
+                .init(episodeDetailCollectionViewCellTitle: "Air Date", episodeDetailCollectionViewCellValue: episodeDetail.air_date),
+                .init(episodeDetailCollectionViewCellTitle: "Episode", episodeDetailCollectionViewCellValue: episodeDetail.episode),
+                .init(episodeDetailCollectionViewCellTitle: "Created", episodeDetailCollectionViewCellValue: episodeDetailString),
             ]),
-            .characters(viewModel: characters.map(characterViewModel))
+            .episodeDetailCharacters(viewModel: episodeDetailCharacters.map(characterViewModel))
         ]
     }
 
-    func fetchEpisodeData() {
-        guard let url = endpointUrl, let request = APIRequest(url: url) else {
+    func downloadepisodeDetail() {
+        guard let url = episodeDetailEndpointURL, let request = APIRequest(url: url) else {
             return
         }
 
-        APIService.shared.execute(request, expecting: Episode.self) { [weak self] result in
-            switch result {
-            case .success(let model):
-                self?.fetchRelatedCharacters(episode: model)
+        APIService.shared.execute(request, expecting: Episode.self) { [weak self] episodeDetailResult in
+            switch episodeDetailResult {
+            case .success(let episodeDetailModel):
+                self?.downloadEpisodeDetailCharacters(episodeDetail: episodeDetailModel)
             case .failure:
                 break
             }
         }
     }
 
-    private func fetchRelatedCharacters(episode: Episode) {
-        let requests: [APIRequest] = episode.characters.compactMap { URL(string: $0) }.compactMap { APIRequest(url: $0) }
+    private func downloadEpisodeDetailCharacters(episodeDetail: Episode) {
+        let episodeDetailRequests: [APIRequest] = episodeDetail.characters.compactMap { URL(string: $0) }.compactMap { APIRequest(url: $0) }
+        let episodeDetailGroup = DispatchGroup()
+        var episodeDetailCharacters: [Character] = []
 
-        let group = DispatchGroup()
-        var characters: [Character] = []
-
-        for request in requests {
-            group.enter()
-            APIService.shared.execute(request, expecting: Character.self) { result in
+        for episodeDetailRequest in episodeDetailRequests {
+            episodeDetailGroup.enter()
+            APIService.shared.execute(episodeDetailRequest, expecting: Character.self) { episodeDetailResult in
                 defer {
-                    group.leave()
+                    episodeDetailGroup.leave()
                 }
 
-                switch result {
-                case .success(let model):
-                    characters.append(model)
+                switch episodeDetailResult {
+                case .success(let episodeDetailModel):
+                    episodeDetailCharacters.append(episodeDetailModel)
                 case .failure:
                     break
                 }
             }
         }
 
-        group.notify(queue: .main) {
-            self.dataTuple = (
-                episode: episode,
-                characters: characters
+        episodeDetailGroup.notify(queue: .main) {
+            self.episodeDetailDataSetup = (
+                episode: episodeDetail,
+                characters: episodeDetailCharacters
             )
         }
     }
 
-    private func formattedDateString(from dateString: String) -> String {
-        guard let date = CharacterDetailCollectionViewCellViewModel.dateFormatter.date(from: dateString) else {
-            return dateString
+    private func formattedDateString(from episodeDetailDateString: String) -> String {
+        guard let episodeDetailDate = CharacterInformationSectionViewModel.longFromattedDate.date(from: episodeDetailDateString) else {
+            return episodeDetailDateString
         }
-        return CharacterDetailCollectionViewCellViewModel.shortDateFormatter.string(from: date)
+        return CharacterInformationSectionViewModel.shortFormattedDate.string(from: episodeDetailDate)
     }
 
-    private func characterViewModel(from character: Character) -> CharacterCollectionViewCellViewModel {
+    private func characterViewModel(from characterForEpisodeDetail: Character) -> CharacterCollectionViewCellViewModel {
         CharacterCollectionViewCellViewModel(
-            characterName: character.name,
-            characterStatus: character.status,
-            characterImageUrl: URL(string: character.image)
+            characterCollectionViewCellCharacterName: characterForEpisodeDetail.name,
+            characterCollectionViewCellCharacterStatus: characterForEpisodeDetail.status,
+            characterCollectionViewCellCharacterImageUrl: URL(string: characterForEpisodeDetail.image)
         )
     }
 }

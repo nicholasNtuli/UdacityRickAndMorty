@@ -1,77 +1,77 @@
 import Foundation
 
 protocol LocationViewModelDelegate: AnyObject {
-    func fetchInitialLocations()
+    func downloadLocations()
 }
 
 final class LocationViewModel {
 
-    weak var delegate: LocationViewModelDelegate?
-    private var apiInfo: LocationsResponse.Info?
-    private(set) var cellViewModels: [LocationTableViewCellViewModel] = []
-    var isLoadingMoreLocations = false
-    private var finishPagination: (() -> Void)?
+    weak var locationViewModelDelegate: LocationViewModelDelegate?
+    private var locationViewModelAPIInfo: LocationsResponse.Info?
+    private(set) var locationViewModelCellViewModels: [LocationTableViewCellViewModel] = []
+    var loadMoreLocations = false
+    private var locationViewModelLoadingFinished: (() -> Void)?
 
-    private var locations: [Location] = [] {
+    private var locationsArray: [Location] = [] {
         didSet {
-            updateCellViewModels()
+            updateLocationCellViewModels()
         }
     }
 
-    var shouldShowLoadMoreIndicator: Bool {
-        return apiInfo?.next != nil
+    var shouldLocationLoadingIndicator: Bool {
+        return locationViewModelAPIInfo?.next != nil
     }
 
-    func registerFinishPaginationBlock(_ block: @escaping () -> Void) {
-        finishPagination = block
+    func registerlocationViewModelFinishedBlock(_ block: @escaping () -> Void) {
+        locationViewModelLoadingFinished = block
     }
 
-    func fetchAdditionalLocations() {
-        guard !isLoadingMoreLocations, let nextUrlString = apiInfo?.next, let url = URL(string: nextUrlString), let request = APIRequest(url: url) else {
+    func downloadLocations() {
+        guard !loadMoreLocations, let nextUrlString = locationViewModelAPIInfo?.next, let url = URL(string: nextUrlString), let request = APIRequest(url: url) else {
             return
         }
 
-        isLoadingMoreLocations = true
+        loadMoreLocations = true
 
-        APIService.shared.execute(request, expecting: LocationsResponse.self) { [weak self] result in
+        APIService.shared.execute(request, expecting: LocationsResponse.self) { [weak self] locationResult in
             guard let strongSelf = self else { return }
 
-            switch result {
-            case .success(let responseModel):
-                let moreResults = responseModel.results
-                let info = responseModel.info
-                strongSelf.apiInfo = info
-                strongSelf.cellViewModels.append(contentsOf: moreResults.map { LocationTableViewCellViewModel(location: $0) })
+            switch locationResult {
+            case .success(let locationResponseModel):
+                let additionalLocationResults = locationResponseModel.results
+                let locationInfo = locationResponseModel.info
+                strongSelf.locationViewModelAPIInfo = locationInfo
+                strongSelf.locationViewModelCellViewModels.append(contentsOf: additionalLocationResults.map { LocationTableViewCellViewModel(locationTable: $0) })
 
                 DispatchQueue.main.async {
-                    strongSelf.isLoadingMoreLocations = false
-                    strongSelf.finishPagination?()
+                    strongSelf.loadMoreLocations = false
+                    strongSelf.locationViewModelLoadingFinished?()
                 }
             case .failure(let failure):
                 print(String(describing: failure))
-                self?.isLoadingMoreLocations = false
+                self?.loadMoreLocations = false
             }
         }
     }
 
-    func location(at index: Int) -> Location? {
-        guard index < locations.count, index >= 0 else {
+    func location(at locationIndex: Int) -> Location? {
+        guard locationIndex < locationsArray.count, locationIndex >= 0 else {
             return nil
         }
-        return locations[index]
+        return locationsArray[locationIndex]
     }
 
     func fetchLocations() {
         APIService.shared.execute(
             .listLocationsRequest,
             expecting: LocationsResponse.self
-        ) { [weak self] result in
-            switch result {
-            case .success(let model):
-                self?.apiInfo = model.info
-                self?.locations = model.results
+        ) { [weak self] locationResult in
+            switch locationResult {
+            case .success(let locationModel):
+                self?.locationViewModelAPIInfo = locationModel.info
+                self?.locationsArray = locationModel.results
                 DispatchQueue.main.async {
-                    self?.delegate?.fetchInitialLocations()
+                    self?.locationViewModelDelegate?.downloadLocations()
                 }
             case .failure(_):
                 break
@@ -79,11 +79,11 @@ final class LocationViewModel {
         }
     }
 
-    private func updateCellViewModels() {
-        locations.forEach { location in
-            let cellViewModel = LocationTableViewCellViewModel(location: location)
-            if !cellViewModels.contains(cellViewModel) {
-                cellViewModels.append(cellViewModel)
+    private func updateLocationCellViewModels() {
+        locationsArray.forEach { updateLocation in
+            let locationCellViewModel = LocationTableViewCellViewModel(locationTable: updateLocation)
+            if !locationViewModelCellViewModels.contains(locationCellViewModel) {
+                locationViewModelCellViewModels.append(locationCellViewModel)
             }
         }
     }

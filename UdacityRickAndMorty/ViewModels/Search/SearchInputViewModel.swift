@@ -2,14 +2,14 @@ import Foundation
 
 final class SearchInputViewModel {
     
-    private let type: SearchViewController.Config.`Type`
+    private let searchInputType: SearchViewController.SearchViewControllerConfiguration.`Type`
     
-    enum DynamicOption: String {
+    enum SearchInputConstants: String {
         case status = "Status"
         case gender = "Gender"
         case locationType = "Location Type"
         
-        var queryArgument: String {
+        var searchInputQueryArgument: String {
             switch self {
             case .status: return "status"
             case .gender: return "gender"
@@ -17,7 +17,7 @@ final class SearchInputViewModel {
             }
         }
         
-        var choices: [String] {
+        var searchInputChoices: [String] {
             switch self {
             case .status:
                 return ["alive", "dead", "unknown"]
@@ -29,12 +29,12 @@ final class SearchInputViewModel {
         }
     }
     
-    init(type: SearchViewController.Config.`Type`) {
-        self.type = type
+    init(SearchInputType: SearchViewController.SearchViewControllerConfiguration.`Type`) {
+        self.searchInputType = SearchInputType
     }
     
-    var hasDynamicOptions: Bool {
-        switch type {
+    var searchInputConstant: Bool {
+        switch searchInputType {
         case .character, .location:
             return true
         case .episode:
@@ -42,8 +42,8 @@ final class SearchInputViewModel {
         }
     }
     
-    var options: [DynamicOption] {
-        switch type {
+    var searchInputOptions: [SearchInputConstants] {
+        switch searchInputType {
         case .character:
             return [.status, .gender]
         case .location:
@@ -53,8 +53,8 @@ final class SearchInputViewModel {
         }
     }
     
-    var searchPlaceholderText: String {
-        switch type {
+    var searchInputPlaceholderTexts: String {
+        switch searchInputType {
         case .character:
             return "Character Name"
         case .location:

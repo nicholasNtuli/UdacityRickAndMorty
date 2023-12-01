@@ -2,35 +2,35 @@ import UIKit
 
 final class LocationTableViewCell: UITableViewCell {
     
-    static let cellIdentifier = "LocationTableViewCell"
+    static let reuseCellIdentifier = "LocationTableViewCell"
 
-    private let nameLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = .systemFont(ofSize: 20, weight: .medium)
-        return label
+    private let locationTableViewNameLabel: UILabel = {
+        let locationTableViewNameLabel = UILabel()
+        locationTableViewNameLabel.translatesAutoresizingMaskIntoConstraints = false
+        locationTableViewNameLabel.font = .systemFont(ofSize: 20, weight: .medium)
+        return locationTableViewNameLabel
     }()
 
-    private let typeLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = .systemFont(ofSize: 15, weight: .regular)
-        label.textColor = .secondaryLabel
-        return label
+    private let locationTableViewTypeLabel: UILabel = {
+        let locationTableViewTypeLabel = UILabel()
+        locationTableViewTypeLabel.translatesAutoresizingMaskIntoConstraints = false
+        locationTableViewTypeLabel.font = .systemFont(ofSize: 15, weight: .regular)
+        locationTableViewTypeLabel.textColor = .secondaryLabel
+        return locationTableViewTypeLabel
     }()
 
-    private let dimensionLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .secondaryLabel
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = .systemFont(ofSize: 15, weight: .light)
-        return label
+    private let locationTableViewDimensionLabel: UILabel = {
+        let locationTableViewDimensionLabel = UILabel()
+        locationTableViewDimensionLabel.textColor = .secondaryLabel
+        locationTableViewDimensionLabel.translatesAutoresizingMaskIntoConstraints = false
+        locationTableViewDimensionLabel.font = .systemFont(ofSize: 15, weight: .light)
+        return locationTableViewDimensionLabel
     }()
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        configureUI()
-        configureConstraints()
+        locationTableViewUIConfiguration()
+        locationTableViewConstraintsConfiguration()
         accessoryType = .disclosureIndicator
     }
 
@@ -38,37 +38,37 @@ final class LocationTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func configureUI() {
-        contentView.addSubviews(nameLabel, typeLabel, dimensionLabel)
+    private func locationTableViewUIConfiguration() {
+        contentView.addCharacterDetailLoadingIndicatorSubviews(locationTableViewNameLabel, locationTableViewTypeLabel, locationTableViewDimensionLabel)
     }
 
-    private func configureConstraints() {
+    private func locationTableViewConstraintsConfiguration() {
         NSLayoutConstraint.activate([
-            nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
-            nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
-            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
+            locationTableViewNameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
+            locationTableViewNameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
+            locationTableViewNameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
 
-            typeLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 10),
-            typeLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
-            typeLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
+            locationTableViewTypeLabel.topAnchor.constraint(equalTo: locationTableViewNameLabel.bottomAnchor, constant: 10),
+            locationTableViewTypeLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
+            locationTableViewTypeLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
 
-            dimensionLabel.topAnchor.constraint(equalTo: typeLabel.bottomAnchor, constant: 10),
-            dimensionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
-            dimensionLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
-            dimensionLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
+            locationTableViewDimensionLabel.topAnchor.constraint(equalTo: locationTableViewTypeLabel.bottomAnchor, constant: 10),
+            locationTableViewDimensionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
+            locationTableViewDimensionLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
+            locationTableViewDimensionLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
         ])
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        nameLabel.text = nil
-        typeLabel.text = nil
-        dimensionLabel.text = nil
+        locationTableViewNameLabel.text = nil
+        locationTableViewTypeLabel.text = nil
+        locationTableViewDimensionLabel.text = nil
     }
 
-    func configure(with viewModel: LocationTableViewCellViewModel) {
-        nameLabel.text = viewModel.name
-        typeLabel.text = viewModel.type
-        dimensionLabel.text = viewModel.dimension
+    func locationTableViewConfiguration(with locationTableViewViewModel: LocationTableViewCellViewModel) {
+        locationTableViewNameLabel.text = locationTableViewViewModel.locationName
+        locationTableViewTypeLabel.text = locationTableViewViewModel.locationType
+        locationTableViewDimensionLabel.text = locationTableViewViewModel.locationDimension
     }
 }

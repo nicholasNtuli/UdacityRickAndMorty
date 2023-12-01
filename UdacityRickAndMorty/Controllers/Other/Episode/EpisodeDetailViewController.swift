@@ -2,11 +2,11 @@ import UIKit
 
 final class EpisodeDetailViewController: UIViewController, EpisodeDetailViewModelDelegate, EpisodeDetailViewDelegate {
 
-    private let viewModel: EpisodeDetailViewModel
-    private lazy var detailView = EpisodeDetailView()
+    private let episodeDetailViewModel: EpisodeDetailViewModel
+    private lazy var episodeDetailView = EpisodeDetailView()
 
     init(url: URL?) {
-        self.viewModel = EpisodeDetailViewModel(endpointUrl: url)
+        self.episodeDetailViewModel = EpisodeDetailViewModel(episodeDetailEndpointURL: url)
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -16,50 +16,50 @@ final class EpisodeDetailViewController: UIViewController, EpisodeDetailViewMode
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupUI()
-        viewModel.delegate = self
-        viewModel.fetchEpisodeData()
+        episodeDetailUISetup()
+        episodeDetailViewModel.episodeDetailDelegate = self
+        episodeDetailViewModel.downloadepisodeDetail()
     }
 
-    private func setupUI() {
+    private func episodeDetailUISetup() {
         view.backgroundColor = .systemBackground
-        setupDetailView()
+        setupEpisodeDetailView()
         title = "Episode"
-        setupNavigationBar()
-        addConstraints()
+        episodeDetailNavigationBarSetup()
+        addEpisodeDetailConstraints()
     }
 
-    private func setupDetailView() {
-        view.addSubview(detailView)
-        detailView.delegate = self
+    private func setupEpisodeDetailView() {
+        view.addSubview(episodeDetailView)
+        episodeDetailView.episodeDetailDelegate = self
     }
 
-    private func setupNavigationBar() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(tapShare))
+    private func episodeDetailNavigationBarSetup() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(tapEpisodeDetailShareButton))
     }
 
-    private func addConstraints() {
+    private func addEpisodeDetailConstraints() {
         NSLayoutConstraint.activate([
-            detailView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            detailView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
-            detailView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
-            detailView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            episodeDetailView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            episodeDetailView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
+            episodeDetailView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
+            episodeDetailView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
     }
 
-    @objc private func tapShare() {}
+    @objc private func tapEpisodeDetailShareButton() {}
 
-    @objc private func didTapShare() {}
+    @objc private func didTapEpisodeDetailShareButton() {}
 
-    func episodeDetailView(_ detailView: EpisodeDetailView, select character: Character) {
-        let characterViewModel = CharacterDetailViewModel(character: character)
-        let characterDetailVC = CharacterDetailViewController(viewModel: characterViewModel)
-        characterDetailVC.title = character.name
-        characterDetailVC.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(characterDetailVC, animated: true)
+    func loadEpisodeDetailView(_ detailView: EpisodeDetailView, select character: Character) {
+        let episodeDetailCharacterViewModel = CharacterDetailViewModel(characterDetail: character)
+        let episodeDetailCharacterDetailViewController = CharacterDetailViewController(viewModel: episodeDetailCharacterViewModel)
+        episodeDetailCharacterDetailViewController.title = character.name
+        episodeDetailCharacterDetailViewController.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(episodeDetailCharacterDetailViewController, animated: true)
     }
 
-    func fetchEpisodeDetails() {
-        detailView.configure(with: viewModel)
+    func downloadEpisodeDetails() {
+        episodeDetailView.episodeDetailConfiguration(with: episodeDetailViewModel)
     }
 }

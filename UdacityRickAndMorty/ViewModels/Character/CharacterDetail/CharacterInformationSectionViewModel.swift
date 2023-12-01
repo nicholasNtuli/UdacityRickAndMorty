@@ -1,18 +1,18 @@
 import UIKit
 
-final class CharacterDetailCollectionViewCellViewModel {
+final class CharacterInformationSectionViewModel {
     
-    private let type: Type
-    private let value: String
+    private let charcterInformationType: Type
+    private let charcterInformationValue: String
     
-    static let dateFormatter: DateFormatter = {
+    static let longFromattedDate: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSZ"
         formatter.timeZone = .current
         return formatter
     }()
     
-    static let shortDateFormatter: DateFormatter = {
+    static let shortFormattedDate: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
@@ -20,32 +20,32 @@ final class CharacterDetailCollectionViewCellViewModel {
         return formatter
     }()
     
-    var title: String {
-        return type.displayTitle
+    var charcterInformationTitle: String {
+        return charcterInformationType.charcterInformationDisplayTitle
     }
     
-    var displayValue: String {
-        guard !value.isEmpty else { return "None" }
+    var charcterInformationDisplayValue: String {
+        guard !charcterInformationValue.isEmpty else { return "None" }
         
-        if let date = Self.dateFormatter.date(from: value), type == .created {
-            return Self.shortDateFormatter.string(from: date)
+        if let date = Self.longFromattedDate.date(from: charcterInformationValue), charcterInformationType == .created {
+            return Self.shortFormattedDate.string(from: date)
         }
         
-        return value
+        return charcterInformationValue
     }
     
-    var iconImage: UIImage? {
-        return type.iconImage
+    var charcterInformationIconImage: UIImage? {
+        return charcterInformationType.charcterInformationIconImage
     }
     
-    var tintColor: UIColor {
-        return type.tintColor
+    var charcterInformationTintColor: UIColor {
+        return charcterInformationType.charcterInformationTintColor
     }
     
     enum `Type`: String {
         case status, gender, type, species, origin, created, location, episodeCount
         
-        var tintColor: UIColor {
+        var charcterInformationTintColor: UIColor {
             switch self {
             case .status: return .systemBlue
             case .gender: return .systemRed
@@ -58,11 +58,11 @@ final class CharacterDetailCollectionViewCellViewModel {
             }
         }
         
-        var iconImage: UIImage? {
+        var charcterInformationIconImage: UIImage? {
             return UIImage(systemName: "bell")
         }
         
-        var displayTitle: String {
+        var charcterInformationDisplayTitle: String {
             switch self {
             case .status, .gender, .type, .species, .origin, .created, .location:
                 return rawValue.uppercased()
@@ -72,8 +72,8 @@ final class CharacterDetailCollectionViewCellViewModel {
         }
     }
     
-    init(type: Type, value: String) {
-        self.value = value
-        self.type = type
+    init(charcterInformationType: Type, charcterInformationValue: String) {
+        self.charcterInformationType = charcterInformationType
+        self.charcterInformationValue = charcterInformationValue
     }
 }

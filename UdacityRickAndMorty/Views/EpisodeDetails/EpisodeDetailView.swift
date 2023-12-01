@@ -1,223 +1,232 @@
 import UIKit
 
 protocol EpisodeDetailViewDelegate: AnyObject {
-    func episodeDetailView(
-        _ detailView: EpisodeDetailView,
-        select character: Character
-    )
+    func loadEpisodeDetailView(_ episodeDetailView: EpisodeDetailView, select character: Character)
 }
 
 final class EpisodeDetailView: UIView {
 
-    public weak var delegate: EpisodeDetailViewDelegate?
-    private var collectionView: UICollectionView?
+    public weak var episodeDetailDelegate: EpisodeDetailViewDelegate?
+    private var episodeDetailCollectionView: UICollectionView?
 
-    private var viewModel: EpisodeDetailViewModel? {
+    private var episodeDetailViewModel: EpisodeDetailViewModel? {
         didSet {
-            loadingIndicator.stopAnimating()
-            self.collectionView?.reloadData()
-            self.collectionView?.isHidden = false
+            episodeDetailLoadingIndicator.stopAnimating()
+            self.episodeDetailCollectionView?.reloadData()
+            self.episodeDetailCollectionView?.isHidden = false
             UIView.animate(withDuration: 0.3) {
-                self.collectionView?.alpha = 1
+                self.episodeDetailCollectionView?.alpha = 1
             }
         }
     }
 
-    private let loadingIndicator: UIActivityIndicatorView = {
-        let loadingIndicator = UIActivityIndicatorView()
-        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
-        loadingIndicator.hidesWhenStopped = true
-        return loadingIndicator
+    private let episodeDetailLoadingIndicator: UIActivityIndicatorView = {
+        let episodeDetailLoadingIndicator = UIActivityIndicatorView()
+        episodeDetailLoadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        episodeDetailLoadingIndicator.hidesWhenStopped = true
+        return episodeDetailLoadingIndicator
     }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         translatesAutoresizingMaskIntoConstraints = false
         backgroundColor = .systemBackground
-        let collectionView = createColectionView()
-        addSubviews(collectionView, loadingIndicator)
-        self.collectionView = collectionView
-        addConstraints()
+        let episodeDetailCollectionView = createEpisodeDetailColectionView()
+        addCharacterDetailLoadingIndicatorSubviews(episodeDetailCollectionView, episodeDetailLoadingIndicator)
+        self.episodeDetailCollectionView = episodeDetailCollectionView
+        episodeDetailConstraintsSetup()
 
-        loadingIndicator.startAnimating()
+        episodeDetailLoadingIndicator.startAnimating()
     }
 
     required init?(coder: NSCoder) {
         fatalError("Unsupported")
     }
 
-    private func addConstraints() {
-        guard let collectionView = collectionView else {
+    private func episodeDetailConstraintsSetup() {
+        guard let episodeDetailCollectionView = episodeDetailCollectionView else {
             return
         }
 
         NSLayoutConstraint.activate([
-            loadingIndicator.heightAnchor.constraint(equalToConstant: 100),
-            loadingIndicator.widthAnchor.constraint(equalToConstant: 100),
-            loadingIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
-            loadingIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
+            episodeDetailLoadingIndicator.heightAnchor.constraint(equalToConstant: 100),
+            episodeDetailLoadingIndicator.widthAnchor.constraint(equalToConstant: 100),
+            episodeDetailLoadingIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
+            episodeDetailLoadingIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
 
-            collectionView.topAnchor.constraint(equalTo: topAnchor),
-            collectionView.leftAnchor.constraint(equalTo: leftAnchor),
-            collectionView.rightAnchor.constraint(equalTo: rightAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            episodeDetailCollectionView.topAnchor.constraint(equalTo: topAnchor),
+            episodeDetailCollectionView.leftAnchor.constraint(equalTo: leftAnchor),
+            episodeDetailCollectionView.rightAnchor.constraint(equalTo: rightAnchor),
+            episodeDetailCollectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
     }
 
-    private func createColectionView() -> UICollectionView {
-        let layout = UICollectionViewCompositionalLayout { section, _ in
-            return self.layout(for: section)
+    private func createEpisodeDetailColectionView() -> UICollectionView {
+        let episodeDetailLayout = UICollectionViewCompositionalLayout { section, _ in
+            return self.episodeDetailLayout(for: section)
         }
-        let collectionView = UICollectionView(
+        
+        let episodeDetailCollectionView = UICollectionView(
             frame: .zero,
-            collectionViewLayout: layout
+            collectionViewLayout: episodeDetailLayout
         )
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.isHidden = true
-        collectionView.alpha = 0
-        collectionView.delegate = self
-        collectionView.dataSource = self
-        collectionView.register(EpisodeInfoCollectionViewCell.self,
-                                forCellWithReuseIdentifier: EpisodeInfoCollectionViewCell.cellIdentifier)
-        collectionView.register(CharacterCollectionViewCell.self,
+        
+        episodeDetailCollectionView.translatesAutoresizingMaskIntoConstraints = false
+        episodeDetailCollectionView.isHidden = true
+        episodeDetailCollectionView.alpha = 0
+        episodeDetailCollectionView.delegate = self
+        episodeDetailCollectionView.dataSource = self
+        episodeDetailCollectionView.register(EpisodeInfoCollectionViewCell.self,
+                                forCellWithReuseIdentifier: EpisodeInfoCollectionViewCell.episodeInfoCollectionViewCellIdentifier)
+        episodeDetailCollectionView.register(CharacterCollectionViewCell.self,
                                 forCellWithReuseIdentifier: CharacterCollectionViewCell.reuseIdentifier)
-        return collectionView
+        
+        return episodeDetailCollectionView
     }
     
-    public func configure(with viewModel: EpisodeDetailViewModel) {
-        self.viewModel = viewModel
+    public func episodeDetailConfiguration(with episodeDetailViewModel: EpisodeDetailViewModel) {
+        self.episodeDetailViewModel = episodeDetailViewModel
     }
 }
 
 extension EpisodeDetailView: UICollectionViewDelegate, UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return viewModel?.cellViewModels.count ?? 0
+        return episodeDetailViewModel?.episodeDetailCellViewModels.count ?? 0
     }
 
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        guard let sections = viewModel?.cellViewModels else {
+    func collectionView(_ episodeDetailCollectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        guard let episodeDetailSections = episodeDetailViewModel?.episodeDetailCellViewModels else {
             return 0
         }
-        let sectionType = sections[section]
+        
+        let episodeDetailSectionType = episodeDetailSections[section]
 
-        switch sectionType {
-        case .information(let viewModels):
-            return viewModels.count
-        case .characters(let viewModels):
-            return viewModels.count
+        switch episodeDetailSectionType {
+        case .episodeDetailInformation(let episodeDetailInformationViewModels):
+            return episodeDetailInformationViewModels.count
+        case .episodeDetailCharacters(let episodeDetailCharactersViewModels):
+            return episodeDetailCharactersViewModels.count
         }
     }
 
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-
-        guard let sections = viewModel?.cellViewModels else {
+    func collectionView(_ episodeDetailCollectionView: UICollectionView, cellForItemAt episodeDetailIndexPath: IndexPath) -> UICollectionViewCell {
+        guard let episodeDetailCollectionViewSections = episodeDetailViewModel?.episodeDetailCellViewModels else {
             fatalError("No viewModel")
         }
-        let sectionType = sections[indexPath.section]
+        
+        let episodeDetailCollectionViewSsectionType = episodeDetailCollectionViewSections[episodeDetailIndexPath.section]
 
-        switch sectionType {
-        case .information(let viewModels):
-            let cellViewModel = viewModels[indexPath.row]
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: EpisodeInfoCollectionViewCell.cellIdentifier,
-                for: indexPath
+        switch episodeDetailCollectionViewSsectionType {
+        case .episodeDetailInformation(let episodeDetailInformationViewModel):
+            let episodeDetailCellViewModel = episodeDetailInformationViewModel[episodeDetailIndexPath.row]
+            
+            guard let episodeDetailCell = episodeDetailCollectionView.dequeueReusableCell(
+                withReuseIdentifier: EpisodeInfoCollectionViewCell.episodeInfoCollectionViewCellIdentifier,
+                for: episodeDetailIndexPath
             ) as? EpisodeInfoCollectionViewCell else {
                 fatalError()
             }
-            cell.configure(with: cellViewModel)
-            return cell
-        case .characters(let viewModels):
-            let cellViewModel = viewModels[indexPath.row]
-            guard let cell = collectionView.dequeueReusableCell(
+            
+            episodeDetailCell.episodeInfoCollectionViewConfiguration(with: episodeDetailCellViewModel)
+            
+            return episodeDetailCell
+        
+        case .episodeDetailCharacters(let episodeDetailViewModels):
+            let episodeDetailCellViewModel = episodeDetailViewModels[episodeDetailIndexPath.row]
+            
+            guard let episodeDetailCell = episodeDetailCollectionView.dequeueReusableCell(
                 withReuseIdentifier: CharacterCollectionViewCell.reuseIdentifier,
-                for: indexPath
+                for: episodeDetailIndexPath
             ) as? CharacterCollectionViewCell else {
                 fatalError()
             }
-            cell.configure(with: cellViewModel)
-            return cell
+            
+            episodeDetailCell.characterCollectionViewConfigure(with: episodeDetailCellViewModel)
+            
+            return episodeDetailCell
         }
     }
 
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        collectionView.deselectItem(at: indexPath, animated: true)
-        guard let viewModel = viewModel else {
+    func collectionView(_ episodeDetailCollectionView: UICollectionView, didSelectItemAt episodeDetailIndexPath: IndexPath) {
+        episodeDetailCollectionView.deselectItem(at: episodeDetailIndexPath, animated: true)
+        
+        guard let episodeDetailViewModel = episodeDetailViewModel else {
             return
         }
-        let sections = viewModel.cellViewModels
-        let sectionType = sections[indexPath.section]
+        
+        let episodeDetailSections = episodeDetailViewModel.episodeDetailCellViewModels
+        let episodeDetailSectionType = episodeDetailSections[episodeDetailIndexPath.section]
 
-        switch sectionType {
-        case .information:
+        switch episodeDetailSectionType {
+        case .episodeDetailInformation:
             break
-        case .characters:
-            guard let character = viewModel.character(at: indexPath.row) else {
+        case .episodeDetailCharacters:
+            guard let episodeDetailCharacter = episodeDetailViewModel.episodeDetailCharacter(at: episodeDetailIndexPath.row) else {
                 return
             }
-            delegate?.episodeDetailView(self, select: character)
+            episodeDetailDelegate?.loadEpisodeDetailView(self, select: episodeDetailCharacter)
         }
     }
 }
 
 extension EpisodeDetailView {
-    func layout(for section: Int) -> NSCollectionLayoutSection {
-        guard let sections = viewModel?.cellViewModels else {
-            return createInfoLayout()
+    func episodeDetailLayout(for sectionForEpisodeDetail: Int) -> NSCollectionLayoutSection {
+        guard let episodeDetailSections = episodeDetailViewModel?.episodeDetailCellViewModels else {
+            return createEpisodeDetailInfoLayout()
         }
 
-        switch sections[section] {
-        case .information:
-            return createInfoLayout()
-        case .characters:
-            return createCharacterLayout()
+        switch episodeDetailSections[sectionForEpisodeDetail] {
+        case .episodeDetailInformation:
+            return createEpisodeDetailInfoLayout()
+        case .episodeDetailCharacters:
+            return createEpisodeDetailCharacterLayout()
         }
     }
 
-    func createInfoLayout() -> NSCollectionLayoutSection {
-
-        let item = NSCollectionLayoutItem(layoutSize: .init(
+    func createEpisodeDetailInfoLayout() -> NSCollectionLayoutSection {
+        let episodeDetailItem = NSCollectionLayoutItem(layoutSize: .init(
             widthDimension: .fractionalWidth(1),
             heightDimension: .fractionalHeight(1))
         )
 
-        item.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
+        episodeDetailItem.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
 
-        let group = NSCollectionLayoutGroup.vertical(
+        let episodeDetailGroup = NSCollectionLayoutGroup.vertical(
             layoutSize: .init(widthDimension: .fractionalWidth(1),
                               heightDimension: .absolute(80)),
-            subitems: [item]
+            subitems: [episodeDetailItem]
         )
 
-        let section = NSCollectionLayoutSection(group: group)
+        let sectionForEpisodeDetail = NSCollectionLayoutSection(group: episodeDetailGroup)
 
-        return section
+        return sectionForEpisodeDetail
     }
 
-    func createCharacterLayout() -> NSCollectionLayoutSection {
-        let item = NSCollectionLayoutItem(
+    func createEpisodeDetailCharacterLayout() -> NSCollectionLayoutSection {
+        let episodeDetailItem = NSCollectionLayoutItem(
             layoutSize: NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(UIDevice.isiPhone ? 0.5 : 0.25),
+                widthDimension: .fractionalWidth(UIDevice.checkIfItIsPhoneDevice ? 0.5 : 0.25),
                 heightDimension: .fractionalHeight(1.0)
             )
         )
         
-        item.contentInsets = NSDirectionalEdgeInsets(
+        episodeDetailItem.contentInsets = NSDirectionalEdgeInsets(
             top: 5,
             leading: 10,
             bottom: 5,
             trailing: 10
         )
 
-        let group = NSCollectionLayoutGroup.horizontal(
+        let episodeDetailGroup = NSCollectionLayoutGroup.horizontal(
             layoutSize:  NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1.0),
-                heightDimension: .absolute(UIDevice.isiPhone ? 260 : 320)
+                heightDimension: .absolute(UIDevice.checkIfItIsPhoneDevice ? 260 : 320)
             ),
-            subitems: UIDevice.isiPhone ? [item, item] : [item, item, item, item]
+            subitems: UIDevice.checkIfItIsPhoneDevice ? [episodeDetailItem, episodeDetailItem] : [episodeDetailItem, episodeDetailItem, episodeDetailItem, episodeDetailItem]
         )
         
-        let section = NSCollectionLayoutSection(group: group)
+        let episodeDetailSection = NSCollectionLayoutSection(group: episodeDetailGroup)
         
-        return section
+        return episodeDetailSection
     }
 }

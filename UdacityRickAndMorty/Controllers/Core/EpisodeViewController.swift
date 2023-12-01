@@ -2,51 +2,55 @@ import UIKit
 
 final class EpisodeViewController: UIViewController {
 
-    private let episodeListView = EpisodeListView()
+    private let episodeListViewController = EpisodeListView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureUI()
+        episodeListViewUIConfiguration()
     }
 
-    private func configureUI() {
+    private func episodeListViewUIConfiguration() {
         view.backgroundColor = .systemBackground
         title = "Episodes"
-        setUpView()
-        addSearchButton()
+        episodeListViewViewSetup()
+        addEpisodeListViewSearchButton()
     }
 
-    private func setUpView() {
-        episodeListView.delegate = self
-        view.addSubview(episodeListView)
+    private func episodeListViewViewSetup() {
+        episodeListViewController.delegate = self
+        view.addSubview(episodeListViewController)
         NSLayoutConstraint.activate([
-            episodeListView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            episodeListView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
-            episodeListView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
-            episodeListView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            episodeListViewController.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            episodeListViewController.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
+            episodeListViewController.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
+            episodeListViewController.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
     }
 
-    private func addSearchButton() {
+    private func addEpisodeListViewSearchButton() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .search,
             target: self,
-            action: #selector(tapSearch)
+            action: #selector(tapEpisodeListViewSearch)
         )
     }
 
-    @objc private func tapSearch() {
-        let searchConfig = SearchViewController.Config(type: .episode)
-        let searchVC = SearchViewController(config: searchConfig)
-        searchVC.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(searchVC, animated: true)
+    @objc private func tapEpisodeListViewSearch() {
+        let episodeListViewSearchConfiguration = SearchViewController.SearchViewControllerConfiguration(searchViewType: .episode)
+        let episodeListViewSearchViewController = SearchViewController(config: episodeListViewSearchConfiguration)
+        
+        episodeListViewSearchViewController.navigationItem.largeTitleDisplayMode = .never
+        
+        navigationController?.pushViewController(episodeListViewSearchViewController, animated: true)
     }
 }
 
 extension EpisodeViewController: EpisodeListViewDelegate {
-    func episodeListView(_ episodeListView: EpisodeListView, selectEpisode episode: Episode) {
-        let detailVC = EpisodeDetailViewController(url: URL(string: episode.url))
-        detailVC.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(detailVC, animated: true)
+    func episodeListViewController(_ episodeListView: EpisodeListView, selectEpisode episodeListViewEpisode: Episode) {
+        let episodeListViewDetailViewController = EpisodeDetailViewController(url: URL(string: episodeListViewEpisode.url))
+        
+        episodeListViewDetailViewController.navigationItem.largeTitleDisplayMode = .never
+        
+        navigationController?.pushViewController(episodeListViewDetailViewController, animated: true)
     }
 }

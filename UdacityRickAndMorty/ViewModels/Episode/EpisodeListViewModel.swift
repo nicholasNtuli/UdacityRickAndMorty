@@ -1,58 +1,48 @@
 import UIKit
 
 protocol EpisodeListViewModelDelegate: AnyObject {
-    func loadInitialEpisodes()
-    func loadMoreEpisodes(with newIndexPaths: [IndexPath])
-    func selectEpisode(_ episode: Episode)
+    func downloadEpisodeList()
+    func downloadAddtitionalEpisodeToList(with newIndexPaths: [IndexPath])
+    func episodeListSelection(_ episode: Episode)
 }
 
 final class EpisodeListViewModel: NSObject {
     
-    public weak var delegate: EpisodeListViewModelDelegate?
-    private var apiInfo: EpisodesResponse.Info? = nil
-    private var isLoadingMoreCharacters = false
-    private var cellViewModels: [CharacterEpisodeCollectionViewCellViewModel] = []
+    public weak var episodeListDelegate: EpisodeListViewModelDelegate?
+    private var episodeListAPIInfo: EpisodesResponse.Info? = nil
+    private var episodeListCharactersLoading = false
+    private var episodeListCellViewModels: [CharacterEpisodeSectionViewModel] = []
     
 
-    private let borderColors: [UIColor] = [
-        .systemGreen,
-        .systemBlue,
-        .systemOrange,
-        .systemPink,
-        .systemPurple,
-        .systemRed,
-        .systemYellow,
-        .systemIndigo,
-        .systemMint
-    ]
+    private let episodeListBorderColors: [UIColor] = [.systemGreen, .systemBlue, .systemOrange, .systemPink, .systemPurple, .systemRed, .systemYellow, .systemIndigo, .systemMint]
     
-    private var episodes: [Episode] = [] {
+    private var episodeListArray: [Episode] = [] {
         didSet {
-            for episode in episodes {
-                let viewModel = CharacterEpisodeCollectionViewCellViewModel(
-                    episodeDataUrl: URL(string: episode.url),
-                    borderColor: borderColors.randomElement() ?? .systemBlue
+            for episodeList in episodeListArray {
+                let episodeListViewModel = CharacterEpisodeSectionViewModel(
+                    characterEpisodeBaseURL: URL(string: episodeList.url),
+                    characterEpisodeBorderColor: episodeListBorderColors.randomElement() ?? .systemBlue
                 )
-                if !cellViewModels.contains(viewModel) {
-                    cellViewModels.append(viewModel)
+                if !episodeListCellViewModels.contains(episodeListViewModel) {
+                    episodeListCellViewModels.append(episodeListViewModel)
                 }
             }
         }
     }
     
-    public func fetchEpisodes() {
+    public func downloadEpisodeList() {
         APIService.shared.execute(
             .listEpisodesRequest,
             expecting: EpisodesResponse.self
-        ) { [weak self] result in
-            switch result {
-            case .success(let responseModel):
-                let results = responseModel.results
-                let info = responseModel.info
-                self?.episodes = results
-                self?.apiInfo = info
+        ) { [weak self] episodeListResult in
+            switch episodeListResult {
+            case .success(let episodeListResponseModel):
+                let episodeListResults = episodeListResponseModel.results
+                let episodeListInfo = episodeListResponseModel.info
+                self?.episodeListArray = episodeListResults
+                self?.episodeListAPIInfo = episodeListInfo
                 DispatchQueue.main.async {
-                    self?.delegate?.loadInitialEpisodes()
+                    self?.episodeListDelegate?.downloadEpisodeList()
                 }
             case .failure(let error):
                 print(String(describing: error))
@@ -60,85 +50,85 @@ final class EpisodeListViewModel: NSObject {
         }
     }
     
-    public func fetchAdditionalEpisodes(url: URL) {
-        guard !isLoadingMoreCharacters else {
+    public func downloadAdditionalEpisodeList(url: URL) {
+        guard !episodeListCharactersLoading else {
             return
         }
-        isLoadingMoreCharacters = true
-        guard let request = APIRequest(url: url) else {
-            isLoadingMoreCharacters = false
+        episodeListCharactersLoading = true
+        guard let episodeListRequest = APIRequest(url: url) else {
+            episodeListCharactersLoading = false
             return
         }
         
-        APIService.shared.execute(request, expecting: EpisodesResponse.self) { [weak self] result in
+        APIService.shared.execute(episodeListRequest, expecting: EpisodesResponse.self) { [weak self] episodeListResult in
             guard let strongSelf = self else {
                 return
             }
-            switch result {
-            case .success(let responseModel):
-                let moreResults = responseModel.results
-                let info = responseModel.info
-                strongSelf.apiInfo = info
+            switch episodeListResult {
+            case .success(let episodeListResponseModel):
+                let episodeListAdditionalResults = episodeListResponseModel.results
+                let episodeListInfo = episodeListResponseModel.info
+                strongSelf.episodeListAPIInfo = episodeListInfo
                 
-                let originalCount = strongSelf.episodes.count
-                let newCount = moreResults.count
-                let total = originalCount+newCount
-                let startingIndex = total - newCount
-                let indexPathsToAdd: [IndexPath] = Array(startingIndex..<(startingIndex+newCount)).compactMap({
+                let episodeListCount = strongSelf.episodeListArray.count
+                let newEpisodeListCount = episodeListAdditionalResults.count
+                let episodeListTotal = episodeListCount+newEpisodeListCount
+                let episodeListStartingIndex = episodeListTotal - newEpisodeListCount
+                let episodeListIndexPathsToAdd: [IndexPath] = Array(episodeListStartingIndex..<(episodeListStartingIndex+newEpisodeListCount)).compactMap({
                     return IndexPath(row: $0, section: 0)
                 })
-                strongSelf.episodes.append(contentsOf: moreResults)
+                strongSelf.episodeListArray.append(contentsOf: episodeListAdditionalResults)
                 
                 DispatchQueue.main.async {
-                    strongSelf.delegate?.loadMoreEpisodes(
-                        with: indexPathsToAdd
+                    strongSelf.episodeListDelegate?.downloadAddtitionalEpisodeToList(
+                        with: episodeListIndexPathsToAdd
                     )
                     
-                    strongSelf.isLoadingMoreCharacters = false
+                    strongSelf.episodeListCharactersLoading = false
                 }
-            case .failure(let failure):
-                print(String(describing: failure))
-                self?.isLoadingMoreCharacters = false
+            case .failure(let episodeListFailure):
+                print(String(describing: episodeListFailure))
+                self?.episodeListCharactersLoading = false
             }
         }
     }
     
-    public var shouldShowLoadMoreIndicator: Bool {
-        return apiInfo?.next != nil
+    public var episodeListLoadingIndicator: Bool {
+        return episodeListAPIInfo?.next != nil
     }
 }
 
 extension EpisodeListViewModel: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return cellViewModels.count
+        return episodeListCellViewModels.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifier,
+            withReuseIdentifier: CharacterEpisodeCollectionViewCell.resueCellIdentifier,
             for: indexPath
         ) as? CharacterEpisodeCollectionViewCell else {
             fatalError("Unsupported cell")
         }
-        cell.configure(with: cellViewModels[indexPath.row])
+        cell.characterEpisodeCollectionViewConfiguration(with: episodeListCellViewModels[indexPath.row])
         return cell
     }
     
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        guard kind == UICollectionView.elementKindSectionFooter,
-              let footer = collectionView.dequeueReusableSupplementaryView(
-                ofKind: kind,
-                withReuseIdentifier: FooterLoadingCollectionReusableView.identifier,
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind episodeListKind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        guard episodeListKind == UICollectionView.elementKindSectionFooter,
+              let episodeListFooter = collectionView.dequeueReusableSupplementaryView(
+                ofKind: episodeListKind,
+                withReuseIdentifier: FooterLoadingCollectionReusableView.footerLoadingCollectionIdentifier,
                 for: indexPath
               ) as? FooterLoadingCollectionReusableView else {
             fatalError("Unsupported")
         }
-        footer.startAnimating()
-        return footer
+        episodeListFooter.footerLoadingCollectionAnimating()
+        return episodeListFooter
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
-        guard shouldShowLoadMoreIndicator else {
+        guard episodeListLoadingIndicator else {
             return .zero
         }
         
@@ -147,37 +137,37 @@ extension EpisodeListViewModel: UICollectionViewDataSource, UICollectionViewDele
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let bounds = collectionView.bounds
-        let width = bounds.width-20
+        let episodeListBounds = collectionView.bounds
+        let episodeListWidth = episodeListBounds.width-20
         return CGSize(
-            width: width,
+            width: episodeListWidth,
             height: 100
         )
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
-        let selection = episodes[indexPath.row]
-        delegate?.selectEpisode(selection)
+        let episodeListSelection = episodeListArray[indexPath.row]
+        episodeListDelegate?.episodeListSelection(episodeListSelection)
     }
 }
 
 extension EpisodeListViewModel: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        guard shouldShowLoadMoreIndicator,
-              !isLoadingMoreCharacters,
-              !cellViewModels.isEmpty,
-              let nextUrlString = apiInfo?.next,
-              let url = URL(string: nextUrlString) else {
+        guard episodeListLoadingIndicator,
+              !episodeListCharactersLoading,
+              !episodeListCellViewModels.isEmpty,
+              let nextEpisodeListURLString = episodeListAPIInfo?.next,
+              let episodeListURL = URL(string: nextEpisodeListURLString) else {
             return
         }
         Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false) { [weak self] t in
-            let offset = scrollView.contentOffset.y
-            let totalContentHeight = scrollView.contentSize.height
-            let totalScrollViewFixedHeight = scrollView.frame.size.height
+            let episodeListOffset = scrollView.contentOffset.y
+            let episodeListTotalContentHeight = scrollView.contentSize.height
+            let episodeListTotalScrollViewFixedHeight = scrollView.frame.size.height
             
-            if offset >= (totalContentHeight - totalScrollViewFixedHeight - 120) {
-                self?.fetchAdditionalEpisodes(url: url)
+            if episodeListOffset >= (episodeListTotalContentHeight - episodeListTotalScrollViewFixedHeight - 120) {
+                self?.downloadAdditionalEpisodeList(url: episodeListURL)
             }
             t.invalidate()
         }

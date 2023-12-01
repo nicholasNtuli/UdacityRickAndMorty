@@ -1,25 +1,25 @@
 import UIKit
 
 protocol CharacterListViewModelDelegate: AnyObject {
-    func loadInitialCharacters()
-    func loadMoreCharacters(with newIndexPaths: [IndexPath])
-    func selectCharacter(_ character: Character)
+    func updateCharacterLit()
+    func downloaadAdditionalCharacterLit(with newIndexPaths: [IndexPath])
+    func characterListViewSectionSetup(_ character: Character)
 }
 
 final class CharacterListViewModel: NSObject {
     
-    weak var delegate: CharacterListViewModelDelegate?
-    private var cellViewModels: [CharacterCollectionViewCellViewModel] = []
-    private var apiInfo: CharactersResponse.Info?
-    private var isLoadingMoreCharacters = false
+    weak var characterListDelegate: CharacterListViewModelDelegate?
+    private var characterCollectionViewCellViewModels: [CharacterCollectionViewCellViewModel] = []
+    private var characterListAPIInfo: CharactersResponse.Info?
+    private var loadMoreToCharacterList = false
     
-    private var characters: [Character] = [] {
+    private var charactersList: [Character] = [] {
         didSet {
-            updateCellViewModels()
+            updateCharacterListCellViewModels()
         }
     }
     
-    func fetchCharacters() {
+    func fetchCharacterList() {
         APIService.shared.execute(
             .listCharactersRequests,
             expecting: CharactersResponse.self
@@ -33,37 +33,37 @@ final class CharacterListViewModel: NSObject {
         }
     }
     
-    func fetchAdditionalCharacters() {
-        guard !isLoadingMoreCharacters,
-              let nextUrlString = apiInfo?.next,
-              let url = URL(string: nextUrlString),
-              let request = APIRequest(url: url) else {
+    func fetchMoreCharactersForList() {
+        guard !loadMoreToCharacterList,
+              let nextCharacterListURLString = characterListAPIInfo?.next,
+              let characterListURL = URL(string: nextCharacterListURLString),
+              let characterListRequest = APIRequest(url: characterListURL) else {
             return
         }
         
-        isLoadingMoreCharacters = true
-        APIService.shared.execute(request, expecting: CharactersResponse.self) { [weak self] result in
+        loadMoreToCharacterList = true
+        APIService.shared.execute(characterListRequest, expecting: CharactersResponse.self) { [weak self] characterListResult in
             guard let strongSelf = self else { return }
             
-            switch result {
+            switch characterListResult {
             case .success(let responseModel):
                 strongSelf.handleSuccessResponse(responseModel.results, info: responseModel.info)
-                strongSelf.isLoadingMoreCharacters = false
+                strongSelf.loadMoreToCharacterList = false
             case .failure(let error):
                 print("Error: \(error)")
-                strongSelf.isLoadingMoreCharacters = false
+                strongSelf.loadMoreToCharacterList = false
             }
         }
     }
     
-    var shouldShowLoadMoreIndicator: Bool {
-        return apiInfo?.next != nil
+    var shouldShowCharacterListLoadingIndicator: Bool {
+        return characterListAPIInfo?.next != nil
     }
 }
 
 extension CharacterListViewModel: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return cellViewModels.count
+        return characterCollectionViewCellViewModels.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -73,27 +73,27 @@ extension CharacterListViewModel: UICollectionViewDataSource {
         ) as? CharacterCollectionViewCell else {
             fatalError("Unsupported cell")
         }
-        cell.configure(with: cellViewModels[indexPath.row])
+        cell.characterCollectionViewConfigure(with: characterCollectionViewCellViewModels[indexPath.row])
         return cell
     }
 }
 
 extension CharacterListViewModel: UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        guard kind == UICollectionView.elementKindSectionFooter,
-              let footer = collectionView.dequeueReusableSupplementaryView(
-                ofKind: kind,
-                withReuseIdentifier: FooterLoadingCollectionReusableView.identifier,
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind characterListKind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        guard characterListKind == UICollectionView.elementKindSectionFooter,
+              let characterListFooter = collectionView.dequeueReusableSupplementaryView(
+                ofKind: characterListKind,
+                withReuseIdentifier: FooterLoadingCollectionReusableView.footerLoadingCollectionIdentifier,
                 for: indexPath
               ) as? FooterLoadingCollectionReusableView else {
             fatalError("Unsupported")
         }
-        footer.startAnimating()
-        return footer
+        characterListFooter.footerLoadingCollectionAnimating()
+        return characterListFooter
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
-        guard shouldShowLoadMoreIndicator else {
+        guard shouldShowCharacterListLoadingIndicator else {
             return .zero
         }
         
@@ -101,74 +101,73 @@ extension CharacterListViewModel: UICollectionViewDelegate, UICollectionViewDele
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let bounds = collectionView.bounds
-        let width: CGFloat
-        if UIDevice.isiPhone {
-            width = (bounds.width - 30) / 2
+        let characterListBounds = collectionView.bounds
+        let characterListWidth: CGFloat
+        
+        if UIDevice.checkIfItIsPhoneDevice {
+            characterListWidth = (characterListBounds.width - 30) / 2
         } else {
-            width = (bounds.width - 50) / 4
+            characterListWidth = (characterListBounds.width - 50) / 4
         }
         
-        return CGSize(width: width, height: width * 1.5)
+        return CGSize(width: characterListWidth, height: characterListWidth * 1.5)
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
-        let character = characters[indexPath.row]
-        delegate?.selectCharacter(character)
+        let characterList = charactersList[indexPath.row]
+        characterListDelegate?.characterListViewSectionSetup(characterList)
     }
 }
 
 extension CharacterListViewModel: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        guard shouldShowLoadMoreIndicator,
-              !isLoadingMoreCharacters,
-              !cellViewModels.isEmpty,
-              let nextUrlString = apiInfo?.next,
-              let _ = URL(string: nextUrlString) else {
+        guard shouldShowCharacterListLoadingIndicator,
+              !loadMoreToCharacterList,
+              !characterCollectionViewCellViewModels.isEmpty,
+              let nextcharacterListURLString = characterListAPIInfo?.next,
+              let _ = URL(string: nextcharacterListURLString) else {
             return
         }
         
-        let offset = scrollView.contentOffset.y
-        let totalContentHeight = scrollView.contentSize.height
-        let totalScrollViewFixedHeight = scrollView.frame.size.height
+        let characterListOffset = scrollView.contentOffset.y
+        let characterListTotalContentHeight = scrollView.contentSize.height
+        let characterListTotalScrollViewFixedHeight = scrollView.frame.size.height
         
-        if offset >= (totalContentHeight - totalScrollViewFixedHeight - 120) {
-            fetchAdditionalCharacters()
+        if characterListOffset >= (characterListTotalContentHeight - characterListTotalScrollViewFixedHeight - 120) {
+            fetchMoreCharactersForList()
         }
     }
 }
 
 private extension CharacterListViewModel {
     func handleSuccessResponse(_ results: [Character], info: CharactersResponse.Info) {
-        characters = results
-        apiInfo = info
+        charactersList = results
+        characterListAPIInfo = info
         DispatchQueue.main.async { [self] in
-            delegate?.loadInitialCharacters()
+            characterListDelegate?.updateCharacterLit()
         }
     }
-    func updateCellViewModels() {
-        var updatedViewModels: [CharacterCollectionViewCellViewModel] = []
+    func updateCharacterListCellViewModels() {
+        var updatedCharacterListViewModels: [CharacterCollectionViewCellViewModel] = []
 
-        for character in characters {
-            let viewModel = CharacterCollectionViewCellViewModel(
-                characterName: character.name,
-                characterStatus: character.status,
-                characterImageUrl: URL(string: character.image)
+        for characterInList in charactersList {
+            let characterListViewModel = CharacterCollectionViewCellViewModel(
+                characterCollectionViewCellCharacterName: characterInList.name,
+                characterCollectionViewCellCharacterStatus: characterInList.status,
+                characterCollectionViewCellCharacterImageUrl: URL(string: characterInList.image)
             )
 
-            if let existingViewModel = cellViewModels.first(where: { $0 == viewModel }) {
-                // Update the existing viewModel with new data
-                existingViewModel.characterName = viewModel.characterName
-                existingViewModel.characterStatus = viewModel.characterStatus
-                existingViewModel.characterImageUrl = viewModel.characterImageUrl
-                updatedViewModels.append(existingViewModel)
+            if let existingCharacterListViewModel = characterCollectionViewCellViewModels.first(where: { $0 == characterListViewModel }) {
+                existingCharacterListViewModel.characterCollectionViewCellCharacterName = characterListViewModel.characterCollectionViewCellCharacterName
+                existingCharacterListViewModel.characterCollectionViewCellCharacterStatus = characterListViewModel.characterCollectionViewCellCharacterStatus
+                existingCharacterListViewModel.characterCollectionViewCellCharacterImageUrl = characterListViewModel.characterCollectionViewCellCharacterImageUrl
+                updatedCharacterListViewModels.append(existingCharacterListViewModel)
             } else {
-                // Add the new viewModel to the updatedViewModels array
-                updatedViewModels.append(viewModel)
+                updatedCharacterListViewModels.append(characterListViewModel)
             }
         }
 
-        cellViewModels = updatedViewModels
+        characterCollectionViewCellViewModels = updatedCharacterListViewModels
     }
 }

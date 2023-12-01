@@ -2,79 +2,84 @@ import UIKit
 
 final class CharacterDetailView: UIView {
 
-    public var collectionView: UICollectionView?
-    private let viewModel: CharacterDetailViewModel
+    public var characterDetailCollectionView: UICollectionView?
+    private let characterDetailViewModel: CharacterDetailViewModel
 
-    private let loadingIndicator: UIActivityIndicatorView = {
-        let spinner = UIActivityIndicatorView(style: .large)
-        spinner.hidesWhenStopped = true
-        spinner.translatesAutoresizingMaskIntoConstraints = false
-        return spinner
+    private let characterDetailLoadingIndicator: UIActivityIndicatorView = {
+        let characterDetailLoadingIndicator = UIActivityIndicatorView(style: .large)
+        characterDetailLoadingIndicator.hidesWhenStopped = true
+        characterDetailLoadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        return characterDetailLoadingIndicator
     }()
 
     init(frame: CGRect, viewModel: CharacterDetailViewModel) {
-        self.viewModel = viewModel
+        self.characterDetailViewModel = viewModel
         super.init(frame: frame)
         translatesAutoresizingMaskIntoConstraints = false
         backgroundColor = .systemBackground
-        setUpUI()
+        characterDetailLoadingIndicatorUISetup()
     }
 
     required init?(coder: NSCoder) {
         fatalError("Unsupported")
     }
 
-    private func setUpUI() {
-        let collectionView = createCollectionView()
-        self.collectionView = collectionView
-        addSubviews(collectionView, loadingIndicator)
-        addConstraints()
+    private func characterDetailLoadingIndicatorUISetup() {
+        let characterDetailLoadingIndicatorCollectionView = characterDetailLoadingIndicatorCreateCollectionView()
+        self.characterDetailCollectionView = characterDetailLoadingIndicatorCollectionView
+        addCharacterDetailLoadingIndicatorSubviews(characterDetailLoadingIndicatorCollectionView, characterDetailLoadingIndicator)
+        addCharacterDetailLoadingIndicatorConstraints()
     }
 
-    private func addConstraints() {
-        guard let collectionView = collectionView else {
+    private func addCharacterDetailLoadingIndicatorConstraints() {
+        guard let characterDetailLoadingIndicatorCollectionView = characterDetailCollectionView else {
             return
         }
 
         NSLayoutConstraint.activate([
-            loadingIndicator.widthAnchor.constraint(equalToConstant: 100),
-            loadingIndicator.heightAnchor.constraint(equalToConstant: 100),
-            loadingIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
-            loadingIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
+            characterDetailLoadingIndicator.widthAnchor.constraint(equalToConstant: 100),
+            characterDetailLoadingIndicator.heightAnchor.constraint(equalToConstant: 100),
+            characterDetailLoadingIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
+            characterDetailLoadingIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
 
-            collectionView.topAnchor.constraint(equalTo: topAnchor),
-            collectionView.leftAnchor.constraint(equalTo: leftAnchor),
-            collectionView.rightAnchor.constraint(equalTo: rightAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            characterDetailLoadingIndicatorCollectionView.topAnchor.constraint(equalTo: topAnchor),
+            characterDetailLoadingIndicatorCollectionView.leftAnchor.constraint(equalTo: leftAnchor),
+            characterDetailLoadingIndicatorCollectionView.rightAnchor.constraint(equalTo: rightAnchor),
+            characterDetailLoadingIndicatorCollectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
     }
 
-    private func createCollectionView() -> UICollectionView {
-        let layout = UICollectionViewCompositionalLayout { sectionIndex, _ in
-            return self.createSection(for: sectionIndex)
+    private func characterDetailLoadingIndicatorCreateCollectionView() -> UICollectionView {
+        let characterDetailLoadingIndicatorLayout = UICollectionViewCompositionalLayout { characterDetailLoadingIndicatorSectionIndex, _ in
+            return self.createCharacterDetailLoadingIndicatorSection(for: characterDetailLoadingIndicatorSectionIndex)
         }
-        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.register(CharacterPhotoCollectionViewCell.self,
-                                forCellWithReuseIdentifier: CharacterPhotoCollectionViewCell.cellIdentifier)
-        collectionView.register(CharacterInfoCollectionViewCell.self,
-                                forCellWithReuseIdentifier: CharacterInfoCollectionViewCell.cellIdentifier)
-        collectionView.register(CharacterEpisodeCollectionViewCell.self,
-                                forCellWithReuseIdentifier: CharacterEpisodeCollectionViewCell.cellIdentifier)
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        return collectionView
+        
+        let characterDetailLoadingIndicatorCollectionView = UICollectionView(frame: .zero, collectionViewLayout: characterDetailLoadingIndicatorLayout)
+        characterDetailLoadingIndicatorCollectionView.translatesAutoresizingMaskIntoConstraints = false
+        characterDetailLoadingIndicatorCollectionView
+            .register(CharacterPhotoCollectionViewCell.self,
+            forCellWithReuseIdentifier: CharacterPhotoCollectionViewCell.reuseCellIdentifier)
+        characterDetailLoadingIndicatorCollectionView
+            .register(CharacterInfoCollectionViewCell.self,
+            forCellWithReuseIdentifier: CharacterInfoCollectionViewCell.reuseCellIdentifier)
+        characterDetailLoadingIndicatorCollectionView
+            .register(CharacterEpisodeCollectionViewCell.self,
+            forCellWithReuseIdentifier: CharacterEpisodeCollectionViewCell.resueCellIdentifier)
+        characterDetailLoadingIndicatorCollectionView.translatesAutoresizingMaskIntoConstraints = false
+        
+        return characterDetailLoadingIndicatorCollectionView
     }
 
-    private func createSection(for sectionIndex: Int) -> NSCollectionLayoutSection {
-        let sectionTypes = viewModel.sections
+    private func createCharacterDetailLoadingIndicatorSection(for sectionIndex: Int) -> NSCollectionLayoutSection {
+        let characterDetailLoadingIndicatorSectionTypes = characterDetailViewModel.characterSections
         
-        switch sectionTypes[sectionIndex]  {
-        case .photo:
-            return viewModel.createPhotoSectionLayout()
-        case .information:
-            return viewModel.createInfoSectionLayout()
-        case .episodes:
-            return viewModel.createEpisodeSectionLayout()
+        switch characterDetailLoadingIndicatorSectionTypes[sectionIndex]  {
+        case .characterPhotoSection:
+            return characterDetailViewModel.setupcCharacterDetailPhotoSection()
+        case .characterInformationSection:
+            return characterDetailViewModel.setupCharacterDetailInfoSection()
+        case .characterEpisodeSection:
+            return characterDetailViewModel.setupCharacterDetailEpisodeSection()
         }
     }
 }

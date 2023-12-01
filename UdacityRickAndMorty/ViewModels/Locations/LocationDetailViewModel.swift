@@ -1,118 +1,111 @@
 import Foundation
 
 protocol LocationDetailViewModelDelegate: AnyObject {
-    func fetchLocationDetails()
+    func downloadLocationDetails()
 }
 
 final class LocationDetailViewModel {
-    private let endpointUrl: URL?
-    weak var delegate: LocationDetailViewModelDelegate?
-    private(set) var cellViewModels: [SectionType] = []
+    
+    private let locationDetailEndpointURL: URL?
+    weak var locationDetailDelegate: LocationDetailViewModelDelegate?
+    private(set) var locationDetailCellViewModels: [LocationDetailSectionType] = []
 
-    private var dataTuple: (location: Location, characters: [Character])? {
+    private var locationDetailDataArray: (location: Location, characters: [Character])? {
         didSet {
-            createCellViewModels()
-            delegate?.fetchLocationDetails()
+            locationDetailCreateCellViewModels()
+            locationDetailDelegate?.downloadLocationDetails()
         }
     }
 
-    enum SectionType {
-        case information(viewModels: [EpisodeDetailCollectionViewCellViewModel])
-        case characters(viewModel: [CharacterCollectionViewCellViewModel])
+    enum LocationDetailSectionType {
+        case locationDetailInformation(viewModels: [EpisodeDetailCollectionViewCellViewModel])
+        case locationDetailCharacters(viewModel: [CharacterCollectionViewCellViewModel])
     }
 
-    init(endpointUrl: URL?) {
-        self.endpointUrl = endpointUrl
+    init(locationDetailEndpointURL: URL?) {
+        self.locationDetailEndpointURL = locationDetailEndpointURL
+    }
+    func locationDetailCharacter(at index: Int) -> Character? {
+        locationDetailDataArray?.characters[safe: index]
     }
 
-    func character(at index: Int) -> Character? {
-        dataTuple?.characters[safe: index]
-    }
-
-    private func createCellViewModels() {
-        guard let dataTuple = dataTuple else {
+    private func locationDetailCreateCellViewModels() {
+        guard let locationDetailDataArray = locationDetailDataArray else {
             return
         }
 
-        let location = dataTuple.location
-        let characters = dataTuple.characters
+        let locationDetailData = locationDetailDataArray.location
+        let locationDetailCharacters = locationDetailDataArray.characters
+        let locationDetailString = formattedlocationDetailString(from: locationDetailData.created)
 
-        let createdString = formattedDateString(from: location.created)
-
-        cellViewModels = [
-            .information(viewModels: [
-                .init(title: "Location Name", value: location.name),
-                .init(title: "Type", value: location.type),
-                .init(title: "Dimension", value: location.dimension),
-                .init(title: "Created", value: createdString),
+        locationDetailCellViewModels = [
+            .locationDetailInformation(viewModels: [
+                .init(episodeDetailCollectionViewCellTitle: "Location Name", episodeDetailCollectionViewCellValue: locationDetailData.name),
+                .init(episodeDetailCollectionViewCellTitle: "Type", episodeDetailCollectionViewCellValue: locationDetailData.type),
+                .init(episodeDetailCollectionViewCellTitle: "Dimension", episodeDetailCollectionViewCellValue: locationDetailData.dimension),
+                .init(episodeDetailCollectionViewCellTitle: "Created", episodeDetailCollectionViewCellValue: locationDetailString),
             ]),
-            .characters(viewModel: characters.map(characterViewModel))
+            .locationDetailCharacters(viewModel: locationDetailCharacters.map(characterViewModel))
         ]
     }
 
-    func fetchLocationData() {
-        guard let url = endpointUrl, let request = APIRequest(url: url) else {
+    func downloadLocationData() {
+        guard let locationDetailURL = locationDetailEndpointURL, let locationDetailRequest = APIRequest(url: locationDetailURL) else {
             return
         }
 
-        APIService.shared.execute(request, expecting: Location.self) { [weak self] result in
-            switch result {
-            case .success(let model):
-                self?.fetchRelatedCharacters(location: model)
+        APIService.shared.execute(locationDetailRequest, expecting: Location.self) { [weak self] locationDetailResult in
+            switch locationDetailResult {
+            case .success(let locationDetailModel):
+                self?.fetchRelatedCharacters(locationDetail: locationDetailModel)
             case .failure:
                 break
             }
         }
     }
 
-    private func fetchRelatedCharacters(location: Location) {
-        let requests: [APIRequest] = location.residents.compactMap { URL(string: $0) }.compactMap { APIRequest(url: $0) }
+    private func fetchRelatedCharacters(locationDetail: Location) {
+        let locationDetailRequests: [APIRequest] = locationDetail.residents.compactMap { URL(string: $0) }.compactMap { APIRequest(url: $0) }
+        let locationDetailGroup = DispatchGroup()
+        var locationDetailCharacters: [Character] = []
 
-        let group = DispatchGroup()
-        var characters: [Character] = []
-
-        for request in requests {
-            group.enter()
-            APIService.shared.execute(request, expecting: Character.self) { result in
+        for locationDetailRequest in locationDetailRequests {
+            locationDetailGroup.enter()
+            APIService.shared.execute(locationDetailRequest, expecting: Character.self) { locationDetailResult in
                 defer {
-                    group.leave()
+                    locationDetailGroup.leave()
                 }
 
-                switch result {
-                case .success(let model):
-                    characters.append(model)
+                switch locationDetailResult {
+                case .success(let locationDetailModel):
+                    locationDetailCharacters.append(locationDetailModel)
                 case .failure:
                     break
                 }
             }
         }
 
-        group.notify(queue: .main) {
-            self.dataTuple = (
-                location: location,
-                characters: characters
+        locationDetailGroup.notify(queue: .main) {
+            self.locationDetailDataArray = (
+                location: locationDetail,
+                characters: locationDetailCharacters
             )
         }
     }
 
-    private func formattedDateString(from dateString: String) -> String {
-        guard let date = CharacterDetailCollectionViewCellViewModel.dateFormatter.date(from: dateString) else {
-            return dateString
+    private func formattedlocationDetailString(from locationDetailDateString: String) -> String {
+        guard let locationDetailDate = CharacterInformationSectionViewModel.longFromattedDate.date(from: locationDetailDateString) else {
+            return locationDetailDateString
         }
-        return CharacterDetailCollectionViewCellViewModel.shortDateFormatter.string(from: date)
+        return CharacterInformationSectionViewModel.shortFormattedDate.string(from: locationDetailDate)
     }
 
-    private func characterViewModel(from character: Character) -> CharacterCollectionViewCellViewModel {
+    private func characterViewModel(from locationDetailCharacter: Character) -> CharacterCollectionViewCellViewModel {
         CharacterCollectionViewCellViewModel(
-            characterName: character.name,
-            characterStatus: character.status,
-            characterImageUrl: URL(string: character.image)
+            characterCollectionViewCellCharacterName: locationDetailCharacter.name,
+            characterCollectionViewCellCharacterStatus: locationDetailCharacter.status,
+            characterCollectionViewCellCharacterImageUrl: URL(string: locationDetailCharacter.image)
         )
     }
 }
 
-extension Collection {
-    subscript(safe index: Index) -> Element? {
-        return indices.contains(index) ? self[index] : nil
-    }
-}

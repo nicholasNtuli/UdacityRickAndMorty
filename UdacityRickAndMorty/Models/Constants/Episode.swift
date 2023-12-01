@@ -1,6 +1,6 @@
 import Foundation
 
-struct Episode: Codable, EpisodeDataRender {
+struct Episode: Codable, EpisodeDataProtocol {
     let id: Int
     let name: String
     let air_date: String

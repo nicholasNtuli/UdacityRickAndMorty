@@ -7,10 +7,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
 
-        let vc = TabBarController()
-        let window = UIWindow(windowScene: windowScene)
-        window.rootViewController = vc
-        window.makeKeyAndVisible()
-        self.window = window
+        let tableBarViewController = TabBarController()
+        let uiWindow = UIWindow(windowScene: windowScene)
+        
+        uiWindow.rootViewController = tableBarViewController
+        uiWindow.makeKeyAndVisible()
+        
+        self.window = uiWindow
     }
 }

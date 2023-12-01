@@ -1,15 +1,15 @@
 import UIKit
 
 extension UIView {
-    func addSubviews(_ views: UIView...) {
-        views.forEach({
+    func addCharacterDetailLoadingIndicatorSubviews(_ uiView: UIView...) {
+        uiView.forEach({
             addSubview($0)
         })
     }
 }
 
 extension UIDevice {
-    static let isiPhone = UIDevice.current.userInterfaceIdiom == .phone
+    static let checkIfItIsPhoneDevice = UIDevice.current.userInterfaceIdiom == .phone
 }
 
 extension APIRequest {
@@ -17,3 +17,10 @@ extension APIRequest {
     static let listEpisodesRequest = APIRequest(endpoint: .episode)
     static let listLocationsRequest = APIRequest(endpoint: .location)
 }
+
+extension Collection {
+    subscript(safe index: Index) -> Element? {
+        return indices.contains(index) ? self[index] : nil
+    }
+}
+

@@ -1,223 +1,234 @@
 import UIKit
 
 protocol LocationDetailViewDelegate: AnyObject {
-    func episodeDetailView(
-        _ detailView: LocationDetailView,
-        select character: Character
-    )
+    func loadLocationDetaiEepisodeDetailView(_ locationDetailView: LocationDetailView, locationDetailSelection character: Character)
 }
 
 final class LocationDetailView: UIView {
 
-    public weak var delegate: LocationDetailViewDelegate?
-    private var collectionView: UICollectionView?
+    public weak var locationDetailDelegate: LocationDetailViewDelegate?
+    private var locationDetailCollectionView: UICollectionView?
     
-    private var viewModel: LocationDetailViewModel? {
+    private var locationDetailViewModel: LocationDetailViewModel? {
         didSet {
-            loadingIndicator.stopAnimating()
-            self.collectionView?.reloadData()
-            self.collectionView?.isHidden = false
+            locationDetailLoadingIndicator.stopAnimating()
+            self.locationDetailCollectionView?.reloadData()
+            self.locationDetailCollectionView?.isHidden = false
             UIView.animate(withDuration: 0.3) {
-                self.collectionView?.alpha = 1
+                self.locationDetailCollectionView?.alpha = 1
             }
         }
     }
 
-    private let loadingIndicator: UIActivityIndicatorView = {
-        let loadingIndicator = UIActivityIndicatorView()
-        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
-        loadingIndicator.hidesWhenStopped = true
-        return loadingIndicator
+    private let locationDetailLoadingIndicator: UIActivityIndicatorView = {
+        let locationDetailLoadingIndicator = UIActivityIndicatorView()
+        locationDetailLoadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        locationDetailLoadingIndicator.hidesWhenStopped = true
+        return locationDetailLoadingIndicator
     }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         translatesAutoresizingMaskIntoConstraints = false
         backgroundColor = .systemBackground
-        let collectionView = createColectionView()
-        addSubviews(collectionView, loadingIndicator)
-        self.collectionView = collectionView
-        addConstraints()
-
-        loadingIndicator.startAnimating()
+        let locationDetailCollectionView = locationDetailCreateColectionView()
+        addCharacterDetailLoadingIndicatorSubviews(locationDetailCollectionView, locationDetailLoadingIndicator)
+        self.locationDetailCollectionView = locationDetailCollectionView
+        addLocationDetailConstraints()
+        locationDetailLoadingIndicator.startAnimating()
     }
 
     required init?(coder: NSCoder) {
         fatalError("Unsupported")
     }
 
-    private func addConstraints() {
-        guard let collectionView = collectionView else {
+    private func addLocationDetailConstraints() {
+        guard let locationDetailCollectionView = locationDetailCollectionView else {
             return
         }
 
         NSLayoutConstraint.activate([
-            loadingIndicator.heightAnchor.constraint(equalToConstant: 100),
-            loadingIndicator.widthAnchor.constraint(equalToConstant: 100),
-            loadingIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
-            loadingIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
+            locationDetailLoadingIndicator.heightAnchor.constraint(equalToConstant: 100),
+            locationDetailLoadingIndicator.widthAnchor.constraint(equalToConstant: 100),
+            locationDetailLoadingIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
+            locationDetailLoadingIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
 
-            collectionView.topAnchor.constraint(equalTo: topAnchor),
-            collectionView.leftAnchor.constraint(equalTo: leftAnchor),
-            collectionView.rightAnchor.constraint(equalTo: rightAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            locationDetailCollectionView.topAnchor.constraint(equalTo: topAnchor),
+            locationDetailCollectionView.leftAnchor.constraint(equalTo: leftAnchor),
+            locationDetailCollectionView.rightAnchor.constraint(equalTo: rightAnchor),
+            locationDetailCollectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
     }
 
-    private func createColectionView() -> UICollectionView {
-        let layout = UICollectionViewCompositionalLayout { section, _ in
-            return self.layout(for: section)
+    private func locationDetailCreateColectionView() -> UICollectionView {
+        let locationDetailLayout = UICollectionViewCompositionalLayout { section, _ in
+            return self.locationDetailLayout(for: section)
         }
-        let collectionView = UICollectionView(
+        
+        let locationDetailCollectionView = UICollectionView(
             frame: .zero,
-            collectionViewLayout: layout
+            collectionViewLayout: locationDetailLayout
         )
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.isHidden = true
-        collectionView.alpha = 0
-        collectionView.delegate = self
-        collectionView.dataSource = self
-        collectionView.register(EpisodeInfoCollectionViewCell.self,
-                                forCellWithReuseIdentifier: EpisodeInfoCollectionViewCell.cellIdentifier)
-        collectionView.register(CharacterCollectionViewCell.self,
+        
+        locationDetailCollectionView.translatesAutoresizingMaskIntoConstraints = false
+        locationDetailCollectionView.isHidden = true
+        locationDetailCollectionView.alpha = 0
+        locationDetailCollectionView.delegate = self
+        locationDetailCollectionView.dataSource = self
+        locationDetailCollectionView.register(EpisodeInfoCollectionViewCell.self,
+                                forCellWithReuseIdentifier: EpisodeInfoCollectionViewCell.episodeInfoCollectionViewCellIdentifier)
+        locationDetailCollectionView.register(CharacterCollectionViewCell.self,
                                 forCellWithReuseIdentifier: CharacterCollectionViewCell.reuseIdentifier)
-        return collectionView
+        
+        return locationDetailCollectionView
     }
     
-    public func configure(with viewModel: LocationDetailViewModel) {
-        self.viewModel = viewModel
+    public func locationDetailConfiguration(with locationDetailViewModel: LocationDetailViewModel) {
+        self.locationDetailViewModel = locationDetailViewModel
     }
 }
 
 extension LocationDetailView: UICollectionViewDelegate, UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return viewModel?.cellViewModels.count ?? 0
+        return locationDetailViewModel?.locationDetailCellViewModels.count ?? 0
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        guard let sections = viewModel?.cellViewModels else {
+        guard let locationDetailSections = locationDetailViewModel?.locationDetailCellViewModels else {
             return 0
         }
-        let sectionType = sections[section]
+        
+        let locationDetailSectionType = locationDetailSections[section]
 
-        switch sectionType {
-        case .information(let viewModels):
+        switch locationDetailSectionType {
+        case .locationDetailInformation(let viewModels):
             return viewModels.count
-        case .characters(let viewModels):
+        case .locationDetailCharacters(let viewModels):
             return viewModels.count
         }
     }
 
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    func collectionView(_ locationDetailCollectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
-        guard let sections = viewModel?.cellViewModels else {
+        guard let locationDetailSections = locationDetailViewModel?.locationDetailCellViewModels else {
             fatalError("No viewModel")
         }
         
-        let sectionType = sections[indexPath.section]
+        let locationDetailSectionType = locationDetailSections[indexPath.section]
 
-        switch sectionType {
-        case .information(let viewModels):
-            let cellViewModel = viewModels[indexPath.row]
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: EpisodeInfoCollectionViewCell.cellIdentifier,
+        switch locationDetailSectionType {
+        case .locationDetailInformation(let locationDetailViewModels):
+            let locationDetailCellViewModel = locationDetailViewModels[indexPath.row]
+            
+            guard let locationDetailCell = locationDetailCollectionView.dequeueReusableCell(
+                withReuseIdentifier: EpisodeInfoCollectionViewCell.episodeInfoCollectionViewCellIdentifier,
                 for: indexPath
             ) as? EpisodeInfoCollectionViewCell else {
                 fatalError()
             }
-            cell.configure(with: cellViewModel)
-            return cell
-        case .characters(let viewModels):
-            let cellViewModel = viewModels[indexPath.row]
-            guard let cell = collectionView.dequeueReusableCell(
+            
+            locationDetailCell.episodeInfoCollectionViewConfiguration(with: locationDetailCellViewModel)
+            
+            return locationDetailCell
+            
+        case .locationDetailCharacters(let locationDetailViewModels):
+            let locationDetailCellViewModel = locationDetailViewModels[indexPath.row]
+            
+            guard let locationDetailCell = locationDetailCollectionView.dequeueReusableCell(
                 withReuseIdentifier: CharacterCollectionViewCell.reuseIdentifier,
                 for: indexPath
             ) as? CharacterCollectionViewCell else {
                 fatalError()
             }
-            cell.configure(with: cellViewModel)
-            return cell
+            
+            locationDetailCell.characterCollectionViewConfigure(with: locationDetailCellViewModel)
+            
+            return locationDetailCell
         }
     }
 
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        collectionView.deselectItem(at: indexPath, animated: true)
+    func collectionView(_ locationDetailCollectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        locationDetailCollectionView.deselectItem(at: indexPath, animated: true)
         
-        guard let viewModel = viewModel else {
+        guard let locationDetailViewModel = locationDetailViewModel else {
             return
         }
         
-        let sections = viewModel.cellViewModels
-        let sectionType = sections[indexPath.section]
+        let locationDetailSections = locationDetailViewModel.locationDetailCellViewModels
+        let locationDetailSectionType = locationDetailSections[indexPath.section]
 
-        switch sectionType {
-        case .information:
+        switch locationDetailSectionType {
+        case .locationDetailInformation:
             break
-        case .characters:
-            guard let character = viewModel.character(at: indexPath.row) else {
+        
+        case .locationDetailCharacters:
+            guard let locationDetailCharacters = locationDetailViewModel.locationDetailCharacter(at: indexPath.row) else {
                 return
             }
-            delegate?.episodeDetailView(self, select: character)
+            locationDetailDelegate?.loadLocationDetaiEepisodeDetailView(self, locationDetailSelection: locationDetailCharacters)
         }
     }
 }
 
 extension LocationDetailView {
-    func layout(for section: Int) -> NSCollectionLayoutSection {
-        guard let sections = viewModel?.cellViewModels else {
-            return createInfoLayout()
+    func locationDetailLayout(for section: Int) -> NSCollectionLayoutSection {
+        guard let locationDetailSections = locationDetailViewModel?.locationDetailCellViewModels else {
+            return createLocationDetailInfoLayout()
         }
 
-        switch sections[section] {
-        case .information:
-            return createInfoLayout()
-        case .characters:
-            return createCharacterLayout()
+        switch locationDetailSections[section] {
+        case .locationDetailInformation:
+            return createLocationDetailInfoLayout()
+        case .locationDetailCharacters:
+            return createLocationDetailCharacterLayout()
         }
     }
 
-    func createInfoLayout() -> NSCollectionLayoutSection {
+    func createLocationDetailInfoLayout() -> NSCollectionLayoutSection {
 
-        let item = NSCollectionLayoutItem(layoutSize: .init(
+        let locationDetailItem = NSCollectionLayoutItem(layoutSize: .init(
             widthDimension: .fractionalWidth(1),
             heightDimension: .fractionalHeight(1))
         )
 
-        item.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
+        locationDetailItem.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
 
-        let group = NSCollectionLayoutGroup.vertical(
+        let locationDetailGroup = NSCollectionLayoutGroup.vertical(
             layoutSize: .init(widthDimension: .fractionalWidth(1),
                               heightDimension: .absolute(80)),
-            subitems: [item]
+            subitems: [locationDetailItem]
         )
 
-        let section = NSCollectionLayoutSection(group: group)
+        let locationDetailSection = NSCollectionLayoutSection(group: locationDetailGroup)
 
-        return section
+        return locationDetailSection
     }
 
-    func createCharacterLayout() -> NSCollectionLayoutSection {
-        let item = NSCollectionLayoutItem(
+    func createLocationDetailCharacterLayout() -> NSCollectionLayoutSection {
+        let locationDetailItem = NSCollectionLayoutItem(
             layoutSize: NSCollectionLayoutSize(
-                widthDimension: .fractionalWidth(UIDevice.isiPhone ? 0.5 : 0.25),
+                widthDimension: .fractionalWidth(UIDevice.checkIfItIsPhoneDevice ? 0.5 : 0.25),
                 heightDimension: .fractionalHeight(1.0)
             )
         )
-        item.contentInsets = NSDirectionalEdgeInsets(
+        
+        locationDetailItem.contentInsets = NSDirectionalEdgeInsets(
             top: 5,
             leading: 10,
             bottom: 5,
             trailing: 10
         )
 
-        let group = NSCollectionLayoutGroup.horizontal(
+        let locationDetailGroup = NSCollectionLayoutGroup.horizontal(
             layoutSize:  NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1.0),
-                heightDimension: .absolute(UIDevice.isiPhone ? 260 : 320)
+                heightDimension: .absolute(UIDevice.checkIfItIsPhoneDevice ? 260 : 320)
             ),
-            subitems: UIDevice.isiPhone ? [item, item] : [item, item, item, item]
+            subitems: UIDevice.checkIfItIsPhoneDevice ? [locationDetailItem, locationDetailItem] : [locationDetailItem, locationDetailItem, locationDetailItem, locationDetailItem]
         )
-        let section = NSCollectionLayoutSection(group: group)
-        return section
+        
+        let locationDetailSection = NSCollectionLayoutSection(group: locationDetailGroup)
+        
+        return locationDetailSection
     }
 }
