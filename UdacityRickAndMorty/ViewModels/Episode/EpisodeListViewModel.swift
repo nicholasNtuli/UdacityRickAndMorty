@@ -5,6 +5,7 @@ protocol EpisodeListViewModelDelegate: AnyObject {
     func downloadAddtitionalEpisodeToList(with newIndexPaths: [IndexPath])
     func episodeListSelection(_ episode: Episode)
     func fetchFavouriteEpisodes()
+    func showAlert(title: String, message: String)
 }
 
 final class EpisodeListViewModel: NSObject, FavourtiesDelegate {
@@ -62,6 +63,7 @@ final class EpisodeListViewModel: NSObject, FavourtiesDelegate {
                 }
             case .failure(let error):
                 print(String(describing: error))
+                self?.showErrorAlert(message: "Failed to download episode list. Please try again.")
             }
         }
     }
@@ -115,6 +117,7 @@ final class EpisodeListViewModel: NSObject, FavourtiesDelegate {
                 }
             case .failure(let episodeListFailure):
                 print(String(describing: episodeListFailure))
+                self?.showErrorAlert(message: "Failed to download additional episode list. Please try again.")
                 self?.episodeListCharactersLoading = false
             }
         }
@@ -122,6 +125,12 @@ final class EpisodeListViewModel: NSObject, FavourtiesDelegate {
     
     public var episodeListLoadingIndicator: Bool {
         return episodeListAPIInfo?.next != nil
+    }
+    
+    private func showErrorAlert(message: String) {
+        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        self.episodeListDelegate?.showAlert(title: "Error", message: message)
     }
 }
 

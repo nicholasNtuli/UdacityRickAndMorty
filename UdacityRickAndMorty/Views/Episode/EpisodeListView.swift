@@ -89,6 +89,16 @@ final class EpisodeListView: UIView {
 }
 
 extension EpisodeListView: EpisodeListViewModelDelegate {
+    func showAlert(title: String, message: String) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let topViewController = windowScene.windows.first?.rootViewController {
+            topViewController.present(alertController, animated: true, completion: nil)
+        }
+    }
+    
     func fetchFavouriteEpisodes() {
         loadingIndicator.stopAnimating()
         collectionView.isHidden = false

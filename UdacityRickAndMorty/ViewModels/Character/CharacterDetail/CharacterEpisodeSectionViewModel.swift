@@ -28,12 +28,12 @@ class EpisodeData: Object, EpisodeDataProtocol {
 }
 
 final class CharacterEpisodeSectionViewModel: Hashable, Equatable {
-
+    
     private let characterEpisodeBaseURL: URL?
     private var characterEpisodeDataFetcher = false
     private var characterEpisodeDataBlock: ((EpisodeDataProtocol) -> Void)?
     public let characterEpisodeBorderColor: UIColor
-
+    
     private var characterEpisode: Episode? {
         didSet {
             guard let model = characterEpisode else {
@@ -47,11 +47,11 @@ final class CharacterEpisodeSectionViewModel: Hashable, Equatable {
         self.characterEpisodeBaseURL = characterEpisodeBaseURL
         self.characterEpisodeBorderColor = characterEpisodeBorderColor
     }
-
+    
     public func characterEpisodeRegisterData(_ block: @escaping (EpisodeDataProtocol) -> Void) {
         self.characterEpisodeDataBlock = block
     }
-
+    
     public func fetchCharacterEpisode() {
         guard !characterEpisodeDataFetcher else {
             if let model = characterEpisode {
@@ -59,14 +59,15 @@ final class CharacterEpisodeSectionViewModel: Hashable, Equatable {
             }
             return
         }
-
+        
         guard let url = characterEpisodeBaseURL,
               let request = APIRequest(url: url) else {
+            showAlert(title: "Error", message: "Invalid URL or request")
             return
         }
-
+        
         characterEpisodeDataFetcher = true
-
+        
         APIService.shared.execute(request, expecting: Episode.self) { [weak self] result in
             switch result {
             case .success(let model):
@@ -75,15 +76,29 @@ final class CharacterEpisodeSectionViewModel: Hashable, Equatable {
                 }
             case .failure(let failure):
                 print(String(describing: failure))
+                // Display an alert when the download fails
+                self?.showAlert(title: "Error", message: "Failed to download character episode data. Please try again.")
             }
         }
     }
-
+    
     func hash(into hasher: inout Hasher) {
         hasher.combine(self.characterEpisodeBaseURL?.absoluteString ?? "")
     }
-
+    
     static func == (lhs: CharacterEpisodeSectionViewModel, rhs: CharacterEpisodeSectionViewModel) -> Bool {
         return lhs.hashValue == rhs.hashValue
+    }
+    
+    private func showAlert(title: String, message: String) {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: "Error", message: "Failed to perform the search.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let topViewController = windowScene.windows.first?.rootViewController {
+                topViewController.present(alert, animated: true, completion: nil)
+            }
+        }
     }
 }

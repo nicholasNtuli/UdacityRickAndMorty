@@ -56,7 +56,13 @@ final class LocationViewController: UIViewController {
     }
 }
 
-extension LocationViewController: LocationViewModelDelegate {
+extension LocationViewController: LocationViewModelDelegate {    
+    func downloadLocationsFailed(with error: Error) {
+        let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+    
     func downloadLocations() {
         locationUIView.locationViewConfiguration(with: locationViewModel)
     }

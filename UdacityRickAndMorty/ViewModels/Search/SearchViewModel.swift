@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 final class SearchViewModel {
     
@@ -61,7 +62,17 @@ final class SearchViewModel {
             case .success(let searchViewModel):
                 self?.searchViewResultProcesor(searchViewModel: searchViewModel)
             case .failure:
-                self?.noSearchViewResultsFOunderHandler()
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Error", message: "Failed to perform the search.", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                       let topViewController = windowScene.windows.first?.rootViewController {
+                        topViewController.present(alert, animated: true, completion: nil)
+                    }
+                    
+                    self?.noSearchViewResultsFOunderHandler()
+                }
             }
         }
     }

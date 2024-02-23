@@ -14,8 +14,8 @@
             filePath = "UdacityRickAndMorty/ViewModels/Episode/EpisodeListViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "74"
-            endingLineNumber = "74"
+            startingLineNumber = "76"
+            endingLineNumber = "76"
             landmarkName = "fetchFavouriteEpisodes()"
             landmarkType = "7">
          </BreakpointContent>
@@ -30,8 +30,8 @@
             filePath = "UdacityRickAndMorty/ViewModels/Episode/EpisodeListViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "178"
-            endingLineNumber = "178"
+            startingLineNumber = "187"
+            endingLineNumber = "187"
             landmarkName = "collectionView(_:didSelectItemAt:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -46,8 +46,8 @@
             filePath = "UdacityRickAndMorty/ViewModels/Episode/EpisodeListViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "179"
-            endingLineNumber = "179"
+            startingLineNumber = "188"
+            endingLineNumber = "188"
             landmarkName = "collectionView(_:didSelectItemAt:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -62,8 +62,8 @@
             filePath = "UdacityRickAndMorty/ViewModels/Episode/EpisodeListViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "180"
-            endingLineNumber = "180"
+            startingLineNumber = "189"
+            endingLineNumber = "189"
             landmarkName = "collectionView(_:didSelectItemAt:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -78,8 +78,8 @@
             filePath = "UdacityRickAndMorty/ViewModels/Episode/EpisodeListViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "40"
-            endingLineNumber = "40"
+            startingLineNumber = "41"
+            endingLineNumber = "41"
             landmarkName = "addToFavourites(cell:indexPath:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -94,58 +94,10 @@
             filePath = "UdacityRickAndMorty/Views/Episode/EpisodeListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "95"
-            endingLineNumber = "95"
+            startingLineNumber = "105"
+            endingLineNumber = "105"
             landmarkName = "fetchFavouriteEpisodes()"
             landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "62A0F6E6-B188-4A93-B3C4-A7B9569406FB"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "UdacityRickAndMorty/ViewModels/Episode/EpisodeListViewModel.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "41"
-            endingLineNumber = "41"
-            landmarkName = "addToFavourites(cell:indexPath:)"
-            landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "62A0F6E6-B188-4A93-B3C4-A7B9569406FB - d8639a42e96440be"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "UdacityRickAndMorty.EpisodeListViewModel.addToFavourites(cell: __C.UICollectionViewCell, indexPath: Foundation.IndexPath) -&gt; ()"
-                  moduleName = "UdacityRickAndMorty"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/sihle.ntuli/UdacityRickAndMorty/UdacityRickAndMorty/ViewModels/Episode/EpisodeListViewModel.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "41"
-                  endingLineNumber = "41"
-                  offsetFromSymbolStart = "1355">
-               </Location>
-               <Location
-                  uuid = "62A0F6E6-B188-4A93-B3C4-A7B9569406FB - d8639a42e96440be"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "UdacityRickAndMorty.EpisodeListViewModel.addToFavourites(cell: __C.UICollectionViewCell, indexPath: Foundation.IndexPath) -&gt; ()"
-                  moduleName = "UdacityRickAndMorty"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/sihle.ntuli/UdacityRickAndMorty/UdacityRickAndMorty/ViewModels/Episode/EpisodeListViewModel.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "41"
-                  endingLineNumber = "41"
-                  offsetFromSymbolStart = "1376">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -190,8 +142,8 @@
             filePath = "UdacityRickAndMorty/ViewModels/Episode/EpisodeListViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "45"
-            endingLineNumber = "45"
+            startingLineNumber = "46"
+            endingLineNumber = "46"
             landmarkName = "addToFavourites(cell:indexPath:)"
             landmarkType = "7">
          </BreakpointContent>

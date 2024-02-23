@@ -92,8 +92,15 @@ final class CharacterCollectionViewCell: UICollectionViewCell {
                     self?.characterCollectionViewImageView.image = characterCollectionViewImage
                 }
             case .failure(let characterCollectionViewError):
-                print(String(describing: characterCollectionViewError))
-                break
+                DispatchQueue.main.async {
+                    // Display an alert for the failure
+                    let alert = UIAlertController(title: "Error", message: "Failed to load character image.", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    self?.window?.rootViewController?.present(alert, animated: true, completion: nil)
+                    
+                    // Print the error to the console
+                    print("Character Image Loading Error: \(characterCollectionViewError)")
+                }
             }
         }
     }

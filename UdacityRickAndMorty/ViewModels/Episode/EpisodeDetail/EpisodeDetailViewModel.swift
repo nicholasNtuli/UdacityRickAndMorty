@@ -2,6 +2,7 @@ import UIKit
 
 protocol EpisodeDetailViewModelDelegate: AnyObject {
     func downloadEpisodeDetails()
+    func showAlert(title: String, message: String)
 }
 
 final class EpisodeDetailViewModel {
@@ -58,8 +59,8 @@ final class EpisodeDetailViewModel {
             switch episodeDetailResult {
             case .success(let episodeDetailModel):
                 self?.downloadEpisodeDetailCharacters(episodeDetail: episodeDetailModel)
-            case .failure:
-                break
+            case .failure(let error):
+                self?.episodeDetailDelegate?.showAlert(title: "Error", message: error.localizedDescription)
             }
         }
     }
@@ -79,8 +80,8 @@ final class EpisodeDetailViewModel {
                 switch episodeDetailResult {
                 case .success(let episodeDetailModel):
                     episodeDetailCharacters.append(episodeDetailModel)
-                case .failure:
-                    break
+                case .failure(let error):
+                    self.episodeDetailDelegate?.showAlert(title: "Error", message: error.localizedDescription)
                 }
             }
         }

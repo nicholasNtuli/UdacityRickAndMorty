@@ -1,37 +1,38 @@
 import Foundation
+import UIKit
 
 final class SearchResultViewModel {
     
     public private(set) var searchResults: SearchResultType
     private var nextSearchResult: String?
     public private(set) var searchResultsLoading = false
-
+    
     init(searchResults: SearchResultType, next: String?) {
         self.searchResults = searchResults
         self.nextSearchResult = next
     }
-
+    
     public var searchResultLoadingIndicator: Bool {
         return nextSearchResult != nil
     }
-
+    
     public func downloadAdditionalSearchResults(completion: @escaping ([LocationTableViewCellViewModel]) -> Void) {
         guard !searchResultsLoading else {
             return
         }
-
+        
         guard let nextSearchResultsURLString = nextSearchResult,
               let searchResultsURL = URL(string: nextSearchResultsURLString) else {
             return
         }
-
+        
         searchResultsLoading = true
-
+        
         guard let searchResultsRequest = APIRequest(url: searchResultsURL) else {
             searchResultsLoading = false
             return
         }
-
+        
         APIService.shared.execute(searchResultsRequest, expecting: LocationsResponse.self) { [weak self] searchResultsResult in
             guard let strongSelf = self else {
                 return
@@ -41,13 +42,13 @@ final class SearchResultViewModel {
                 let additionalSearchResults = searchResultsResponseModel.results
                 let searchResultsInfo = searchResultsResponseModel.info
                 strongSelf.nextSearchResult = searchResultsInfo.next
-
+                
                 let additionalSearchResultsLocations = additionalSearchResults.compactMap({
                     return LocationTableViewCellViewModel(locationTable: $0)
                 })
                 
                 var newSearchResults: [LocationTableViewCellViewModel] = []
-
+                
                 switch strongSelf.searchResults {
                 case .locations(let existingResults):
                     newSearchResults = existingResults + additionalSearchResultsLocations
@@ -56,35 +57,45 @@ final class SearchResultViewModel {
                 case .characters, .episodes:
                     break
                 }
-
+                
                 DispatchQueue.main.async {
                     strongSelf.searchResultsLoading = false
                     completion(newSearchResults)
                 }
             case .failure(let failure):
-                print(String(describing: failure))
-                self?.searchResultsLoading = false
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Error", message: "Failed to download additional search results.", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                       let topViewController = windowScene.windows.first?.rootViewController {
+                        topViewController.present(alert, animated: true, completion: nil)
+                    }
+                    
+                    print(String(describing: failure))
+                    self?.searchResultsLoading = false
+                }
             }
         }
     }
-
+    
     public func downloadAdditionalSearchResults(completion: @escaping ([any Hashable]) -> Void) {
         guard !searchResultsLoading else {
             return
         }
-
+        
         guard let nextSearchResultsString = nextSearchResult,
               let searchResultURL = URL(string: nextSearchResultsString) else {
             return
         }
-
+        
         searchResultsLoading = true
-
+        
         guard let searchRequest = APIRequest(url: searchResultURL) else {
             searchResultsLoading = false
             return
         }
-
+        
         switch searchResults {
         case .characters(let existingSearchResults):
             APIService.shared.execute(searchRequest, expecting: CharactersResponse.self) { [weak self] searchResult in
@@ -96,7 +107,7 @@ final class SearchResultViewModel {
                     let additionalSearchResults = searchReaserchResponseModel.results
                     let searchResultsInfo = searchReaserchResponseModel.info
                     strongSelf.nextSearchResult = searchResultsInfo.next
-
+                    
                     let additionalResults = additionalSearchResults.compactMap({
                         return CharacterCollectionViewCellViewModel(characterCollectionViewCellCharacterName: $0.name,
                                                                     characterCollectionViewCellCharacterStatus: $0.status,
@@ -105,14 +116,24 @@ final class SearchResultViewModel {
                     var newSearchResults: [CharacterCollectionViewCellViewModel] = []
                     newSearchResults = existingSearchResults + additionalResults
                     strongSelf.searchResults = .characters(newSearchResults)
-
+                    
                     DispatchQueue.main.async {
                         strongSelf.searchResultsLoading = false
                         completion(newSearchResults)
                     }
                 case .failure(let searchResuktsFailure):
-                    print(String(describing: searchResuktsFailure))
-                    self?.searchResultsLoading = false
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: "Error", message: "Failed to download additional search results.", preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                        
+                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                           let topViewController = windowScene.windows.first?.rootViewController {
+                            topViewController.present(alert, animated: true, completion: nil)
+                        }
+                        
+                        print(String(describing: searchResuktsFailure))
+                        self?.searchResultsLoading = false
+                    }
                 }
             }
         case .episodes(let existingSearchResults):
@@ -125,7 +146,7 @@ final class SearchResultViewModel {
                     let additionalSearchResults = searchRequestResponseModel.results
                     let searchResultsInfo = searchRequestResponseModel.info
                     strongSelf.nextSearchResult = searchResultsInfo.next
-
+                    
                     let additionalResultForSearch = additionalSearchResults.compactMap({
                         return CharacterEpisodeSectionViewModel(characterEpisodeBaseURL: URL(string: $0.url))
                     })
@@ -133,14 +154,24 @@ final class SearchResultViewModel {
                     var newSearchResults: [CharacterEpisodeSectionViewModel] = []
                     newSearchResults = existingSearchResults + additionalResultForSearch
                     strongSelf.searchResults = .episodes(newSearchResults)
-
+                    
                     DispatchQueue.main.async {
                         strongSelf.searchResultsLoading = false
                         completion(newSearchResults)
                     }
                 case .failure(let seachResultsFailure):
-                    print(String(describing: seachResultsFailure))
-                    self?.searchResultsLoading = false
+                    DispatchQueue.main.async {
+                        print(String(describing: seachResultsFailure))
+                        let alert = UIAlertController(title: "Error", message: "Failed to download additional search results.", preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                        
+                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                           let topViewController = windowScene.windows.first?.rootViewController {
+                            topViewController.present(alert, animated: true, completion: nil)
+                        }
+                        
+                        self?.searchResultsLoading = false
+                    }
                 }
             }
         case .locations:

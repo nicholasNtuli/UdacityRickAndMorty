@@ -66,6 +66,16 @@ extension LocationDetailViewController: LocationDetailViewDelegate {
 }
 
 extension LocationDetailViewController: LocationDetailViewModelDelegate {
+    func downloadLocationDetailsFailed(error: Error) {
+        let alert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let topViewController = windowScene.windows.first?.rootViewController {
+            topViewController.present(alert, animated: true, completion: nil)
+        }
+    }
+    
     func downloadLocationDetails() {
         locationDetailView.locationDetailConfiguration(with: locationDetailViewModel)
     }
