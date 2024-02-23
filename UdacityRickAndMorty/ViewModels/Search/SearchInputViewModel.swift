@@ -2,12 +2,12 @@ import Foundation
 
 final class SearchInputViewModel {
     
-    private let searchInputType: SearchViewController.SearchViewControllerConfiguration.`Type`
+    private let searchInputType: SearchViewController.SearchViewControllerConfiguration.`SearchType`
     
     enum SearchInputConstants: String {
         case status = "Status"
         case gender = "Gender"
-        case locationType = "Location Type"
+        case locationType = "Location `CharInfoType`"
         
         var searchInputQueryArgument: String {
             switch self {
@@ -29,7 +29,7 @@ final class SearchInputViewModel {
         }
     }
     
-    init(SearchInputType: SearchViewController.SearchViewControllerConfiguration.`Type`) {
+    init(SearchInputType: SearchViewController.SearchViewControllerConfiguration.`SearchType`) {
         self.searchInputType = SearchInputType
     }
     

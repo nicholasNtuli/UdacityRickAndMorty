@@ -4,6 +4,7 @@ protocol CharacterListViewModelDelegate: AnyObject {
     func updateCharacterLit()
     func downloaadAdditionalCharacterLit(with newIndexPaths: [IndexPath])
     func characterListViewSectionSetup(_ character: Character)
+    func showErrorAlert(from viewController: UIViewController)
 }
 
 final class CharacterListViewModel: NSObject {
@@ -28,7 +29,8 @@ final class CharacterListViewModel: NSObject {
             case .success(let responseModel):
                 self?.handleSuccessResponse(responseModel.results, info: responseModel.info)
             case .failure(let error):
-                print("Error: \(error)")
+                self?.handleError(error)
+                debugPrint("Error: \(error)")
             }
         }
     }
@@ -50,7 +52,8 @@ final class CharacterListViewModel: NSObject {
                 strongSelf.handleSuccessResponse(responseModel.results, info: responseModel.info)
                 strongSelf.loadMoreToCharacterList = false
             case .failure(let error):
-                print("Error: \(error)")
+                debugPrint("Error: \(error)")
+                strongSelf.handleError(error)
                 strongSelf.loadMoreToCharacterList = false
             }
         }
@@ -59,13 +62,35 @@ final class CharacterListViewModel: NSObject {
     var shouldShowCharacterListLoadingIndicator: Bool {
         return characterListAPIInfo?.next != nil
     }
+    
+    private func handleError(_ error: Error) {
+        // Handle the error and show an alert to the user
+        DispatchQueue.main.async { [weak self] in
+            guard let viewController = self?.characterListDelegate as? UIViewController else {
+                return
+            }
+            self?.characterListDelegate?.showErrorAlert(from: viewController)
+        }
+        print("Error: \(error)")
+    }
+    
+    func showErrorAlert(from viewController: UIViewController) {
+        let alertController = UIAlertController(
+            title: "Error",
+            message: "Failed to fetch character data. Please check your internet connection and try again.",
+            preferredStyle: .alert
+        )
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alertController.addAction(okAction)
+        viewController.present(alertController, animated: true, completion: nil)
+    }
 }
 
 extension CharacterListViewModel: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return characterCollectionViewCellViewModels.count
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(
             withReuseIdentifier: CharacterCollectionViewCell.reuseIdentifier,
@@ -91,7 +116,7 @@ extension CharacterListViewModel: UICollectionViewDelegate, UICollectionViewDele
         characterListFooter.footerLoadingCollectionAnimating()
         return characterListFooter
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
         guard shouldShowCharacterListLoadingIndicator else {
             return .zero
@@ -150,14 +175,14 @@ private extension CharacterListViewModel {
     }
     func updateCharacterListCellViewModels() {
         var updatedCharacterListViewModels: [CharacterCollectionViewCellViewModel] = []
-
+        
         for characterInList in charactersList {
             let characterListViewModel = CharacterCollectionViewCellViewModel(
                 characterCollectionViewCellCharacterName: characterInList.name,
                 characterCollectionViewCellCharacterStatus: characterInList.status,
                 characterCollectionViewCellCharacterImageUrl: URL(string: characterInList.image)
             )
-
+            
             if let existingCharacterListViewModel = characterCollectionViewCellViewModels.first(where: { $0 == characterListViewModel }) {
                 existingCharacterListViewModel.characterCollectionViewCellCharacterName = characterListViewModel.characterCollectionViewCellCharacterName
                 existingCharacterListViewModel.characterCollectionViewCellCharacterStatus = characterListViewModel.characterCollectionViewCellCharacterStatus
@@ -167,7 +192,7 @@ private extension CharacterListViewModel {
                 updatedCharacterListViewModels.append(characterListViewModel)
             }
         }
-
+        
         characterCollectionViewCellViewModels = updatedCharacterListViewModels
     }
 }

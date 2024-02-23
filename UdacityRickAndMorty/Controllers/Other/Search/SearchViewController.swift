@@ -8,7 +8,7 @@ final class SearchViewController: UIViewController {
     }()
     
     struct SearchViewControllerConfiguration {
-        enum `Type` {
+        enum `SearchType` {
             case character
             case episode
             case location
@@ -30,7 +30,7 @@ final class SearchViewController: UIViewController {
             }
         }
 
-        let searchViewType: `Type`
+        let searchViewType: `SearchType`
     }
     
     init(config: SearchViewControllerConfiguration) {

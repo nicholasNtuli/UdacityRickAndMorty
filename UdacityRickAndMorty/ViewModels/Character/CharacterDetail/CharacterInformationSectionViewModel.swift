@@ -2,7 +2,7 @@ import UIKit
 
 final class CharacterInformationSectionViewModel {
     
-    private let charcterInformationType: Type
+    private let charcterInformationType: `CharInfoType`
     private let charcterInformationValue: String
     
     static let longFromattedDate: DateFormatter = {
@@ -42,7 +42,7 @@ final class CharacterInformationSectionViewModel {
         return charcterInformationType.charcterInformationTintColor
     }
     
-    enum `Type`: String {
+    enum `CharInfoType`: String {
         case status, gender, type, species, origin, created, location, episodeCount
         
         var charcterInformationTintColor: UIColor {
@@ -72,7 +72,7 @@ final class CharacterInformationSectionViewModel {
         }
     }
     
-    init(charcterInformationType: Type, charcterInformationValue: String) {
+    init(charcterInformationType: `CharInfoType`, charcterInformationValue: String) {
         self.charcterInformationType = charcterInformationType
         self.charcterInformationValue = charcterInformationValue
     }

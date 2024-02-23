@@ -4,16 +4,17 @@ protocol EpisodeListViewModelDelegate: AnyObject {
     func downloadEpisodeList()
     func downloadAddtitionalEpisodeToList(with newIndexPaths: [IndexPath])
     func episodeListSelection(_ episode: Episode)
+    func fetchFavouriteEpisodes()
 }
 
-final class EpisodeListViewModel: NSObject {
-    
+final class EpisodeListViewModel: NSObject, FavourtiesDelegate {
     public weak var episodeListDelegate: EpisodeListViewModelDelegate?
+    let realmManager = ConcreteRealmManager()
     private var episodeListAPIInfo: EpisodesResponse.Info? = nil
     private var episodeListCharactersLoading = false
     private var episodeListCellViewModels: [CharacterEpisodeSectionViewModel] = []
-    
-
+    private var episodeData = [EpisodeData]()
+ 
     private let episodeListBorderColors: [UIColor] = [.systemGreen, .systemBlue, .systemOrange, .systemPink, .systemPurple, .systemRed, .systemYellow, .systemIndigo, .systemMint]
     
     private var episodeListArray: [Episode] = [] {
@@ -27,6 +28,21 @@ final class EpisodeListViewModel: NSObject {
                     episodeListCellViewModels.append(episodeListViewModel)
                 }
             }
+        }
+    }
+    
+    func addToFavourites(cell: UICollectionViewCell, indexPath: IndexPath) {
+        let episodeToAddToFavourite = episodeListArray[indexPath.row]
+        let newEpisodeData = EpisodeData(name: episodeToAddToFavourite.name, air_date: episodeToAddToFavourite.air_date, episode: episodeToAddToFavourite.episode, url: episodeToAddToFavourite.url, created: episodeToAddToFavourite.created)
+        if !episodeData.isEmpty {
+            let selectedEpisodeData = episodeData[indexPath.row]
+            if realmManager.objectExistsInRealm(object: selectedEpisodeData) {
+                realmManager.removeFromRealm(object: selectedEpisodeData)
+                self.episodeListCellViewModels.remove(at: indexPath.row)
+                self.episodeListDelegate?.fetchFavouriteEpisodes()
+            }
+        } else {
+            realmManager.addToRealm(object: newEpisodeData)
         }
     }
     
@@ -48,6 +64,17 @@ final class EpisodeListViewModel: NSObject {
                 print(String(describing: error))
             }
         }
+    }
+    
+    func fetchFavouriteEpisodes() {
+        let favouriteEpisodes = realmManager.fetchDataFromRealm(object: EpisodeData.self)
+        episodeData.append(contentsOf: favouriteEpisodes)
+        for favouriteEpisode in favouriteEpisodes {
+            let episode = Episode(id: 1, name: favouriteEpisode.name, air_date: favouriteEpisode.air_date, episode: favouriteEpisode.episode, characters: [], url: favouriteEpisode.url, created: favouriteEpisode.created)
+            episodeListArray.append(episode)
+        }
+        
+        self.episodeListDelegate?.fetchFavouriteEpisodes()
     }
     
     public func downloadAdditionalEpisodeList(url: URL) {
@@ -110,6 +137,8 @@ extension EpisodeListViewModel: UICollectionViewDataSource, UICollectionViewDele
         ) as? CharacterEpisodeCollectionViewCell else {
             fatalError("Unsupported cell")
         }
+        cell.indexPath = indexPath
+        cell.favouritesDelegate = self
         cell.characterEpisodeCollectionViewConfiguration(with: episodeListCellViewModels[indexPath.row])
         return cell
     }

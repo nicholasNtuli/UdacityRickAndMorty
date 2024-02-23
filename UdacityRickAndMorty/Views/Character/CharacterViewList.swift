@@ -77,6 +77,17 @@ final class CharacterViewList: UIView {
 }
 
 extension CharacterViewList: CharacterListViewModelDelegate {
+    func showErrorAlert(from viewController: UIViewController) {
+        let alertController = UIAlertController(
+            title: "Error",
+            message: "Failed to fetch character data. Please check your internet connection and try again.",
+            preferredStyle: .alert
+        )
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alertController.addAction(okAction)
+        viewController.present(alertController, animated: true, completion: nil)
+    }
+    
     func characterListViewSectionSetup(_ character: Character) {
         characterListDelegate?.downloadFullCharacterViewList(self, selectCharacter: character)
     }

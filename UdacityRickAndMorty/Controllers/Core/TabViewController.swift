@@ -17,11 +17,13 @@ final class TabBarController: UITabBarController {
         let tabBarCharactersViewController = CharacterViewController()
         let tabBarLocationsViewController = LocationViewController()
         let tabBarEpisodesViewController = EpisodeViewController()
+        let tabBarFavouriteEpisodesViewController = FavouriteEpisodeViewController()
 
         let tabBarViewInfo: [TabBarViewInfo] = [
             TabBarViewInfo(tabBarTitle: "Characters", tabBarImage: UIImage(systemName: "person"), tabBarViewController: tabBarCharactersViewController),
             TabBarViewInfo(tabBarTitle: "Locations", tabBarImage: UIImage(systemName: "globe"), tabBarViewController: tabBarLocationsViewController),
-            TabBarViewInfo(tabBarTitle: "Episodes", tabBarImage: UIImage(systemName: "tv"), tabBarViewController: tabBarEpisodesViewController)
+            TabBarViewInfo(tabBarTitle: "Episodes", tabBarImage: UIImage(systemName: "tv"), tabBarViewController: tabBarEpisodesViewController),
+            TabBarViewInfo(tabBarTitle: "Favourite", tabBarImage: UIImage(systemName: "heart"), tabBarViewController: tabBarFavouriteEpisodesViewController)
         ]
 
         tabBarViewInfo.forEach { tabBarInfo in

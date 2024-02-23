@@ -1,8 +1,8 @@
 import UIKit
 
-final class EpisodeViewController: UIViewController {
+final class FavouriteEpisodeViewController: UIViewController {
 
-    private let episodeListViewController = EpisodeListView()
+    private let episodeListViewController = EpisodeListView(isFavourites: true)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -10,12 +10,12 @@ final class EpisodeViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        episodeListViewController.callOnDownloadList()
+        episodeListViewController.callOnFavouritesList()
     }
 
     private func episodeListViewUIConfiguration() {
         view.backgroundColor = .systemBackground
-        title = "Episodes"
+        title = "Favourites"
         episodeListViewViewSetup()
         addEpisodeListViewSearchButton()
     }
@@ -49,7 +49,7 @@ final class EpisodeViewController: UIViewController {
     }
 }
 
-extension EpisodeViewController: EpisodeListViewDelegate {
+extension FavouriteEpisodeViewController: EpisodeListViewDelegate {
     func episodeListViewController(_ episodeListView: EpisodeListView, selectEpisode episodeListViewEpisode: Episode) {
         let episodeListViewDetailViewController = EpisodeDetailViewController(url: URL(string: episodeListViewEpisode.url))
         

@@ -41,7 +41,7 @@ final class LocationDetailViewModel {
         locationDetailCellViewModels = [
             .locationDetailInformation(viewModels: [
                 .init(episodeDetailCollectionViewCellTitle: "Location Name", episodeDetailCollectionViewCellValue: locationDetailData.name),
-                .init(episodeDetailCollectionViewCellTitle: "Type", episodeDetailCollectionViewCellValue: locationDetailData.type),
+                .init(episodeDetailCollectionViewCellTitle: "`CharInfoType`", episodeDetailCollectionViewCellValue: locationDetailData.type),
                 .init(episodeDetailCollectionViewCellTitle: "Dimension", episodeDetailCollectionViewCellValue: locationDetailData.dimension),
                 .init(episodeDetailCollectionViewCellTitle: "Created", episodeDetailCollectionViewCellValue: locationDetailString),
             ]),

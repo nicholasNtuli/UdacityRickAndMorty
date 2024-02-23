@@ -1,9 +1,30 @@
 import UIKit
+import RealmSwift
 
 protocol EpisodeDataProtocol {
     var name: String { get }
     var air_date: String { get }
     var episode: String { get }
+    var url: String { get }
+    var created: String { get }
+}
+
+class EpisodeData: Object, EpisodeDataProtocol {
+    @objc dynamic var id: String = UUID().uuidString
+    @objc dynamic var name: String = ""
+    @objc dynamic var air_date: String = ""
+    @objc dynamic var episode: String = ""
+    @objc dynamic var url: String = ""
+    @objc dynamic var created: String = ""
+    
+    convenience init(name: String, air_date: String, episode: String, url: String, created: String) {
+        self.init()
+        self.name = name
+        self.air_date = air_date
+        self.episode = episode
+        self.url = url
+        self.created = created
+    }
 }
 
 final class CharacterEpisodeSectionViewModel: Hashable, Equatable {

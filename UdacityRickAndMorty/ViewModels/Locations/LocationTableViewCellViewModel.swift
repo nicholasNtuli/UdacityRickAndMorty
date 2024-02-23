@@ -9,7 +9,7 @@ struct LocationTableViewCellViewModel: Hashable, Equatable {
     }
 
     var locationType: String {
-        "Type: \(locationTable.type)"
+        "`CharInfoType`: \(locationTable.type)"
     }
 
     var locationDimension: String {
