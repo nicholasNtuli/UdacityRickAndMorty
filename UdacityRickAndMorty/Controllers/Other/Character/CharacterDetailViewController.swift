@@ -1,9 +1,11 @@
 import UIKit
+import Reachability
 
 final class CharacterDetailViewController: UIViewController {
     
     private let charachterDetailViewModel: CharacterDetailViewModel
     private let charachterDetailView: CharacterDetailView
+    private let reachability = try! Reachability()
     
     init(viewModel: CharacterDetailViewModel) {
         self.charachterDetailViewModel = viewModel
@@ -25,7 +27,7 @@ final class CharacterDetailViewController: UIViewController {
             target: self,
             action: #selector(tapCharacterDetailShareButton)
         )
-        
+        checkInternetConnection()
         addCharachterDetailConstraints()
         charachterDetailView.characterDetailCollectionView?.delegate = self
         charachterDetailView.characterDetailCollectionView?.dataSource = self
@@ -41,6 +43,12 @@ final class CharacterDetailViewController: UIViewController {
             charachterDetailView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
             charachterDetailView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
+    }
+    
+    private func checkInternetConnection() {
+        if reachability.connection == .unavailable {
+            showNoInternetAlert()
+        }
     }
 }
 

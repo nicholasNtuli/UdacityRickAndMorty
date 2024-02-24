@@ -1,11 +1,14 @@
 import UIKit
+import Reachability
 
 final class CharacterViewController: UIViewController {
 
     private let characterListView = CharacterViewList()
+    private let reachability = try! Reachability()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        checkInternetConnection()
         characterViewListConfigurationUI()
     }
 
@@ -40,6 +43,12 @@ final class CharacterViewController: UIViewController {
         let searchCharacterViewListViewController = SearchViewController(config: characterViewListConfigurationSearch)
         searchCharacterViewListViewController.navigationItem.largeTitleDisplayMode = .never
         navigationController?.pushViewController(searchCharacterViewListViewController, animated: true)
+    }
+    
+    private func checkInternetConnection() {
+        if reachability.connection == .unavailable {
+            showNoInternetAlert()
+        }
     }
 }
 

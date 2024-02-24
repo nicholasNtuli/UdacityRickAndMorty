@@ -1,11 +1,14 @@
 import UIKit
+import Reachability
 
 final class FavouriteEpisodeViewController: UIViewController {
 
     private let episodeListViewController = EpisodeListView(isFavourites: true)
+    private let reachability = try! Reachability()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        checkInternetConnection()
         episodeListViewUIConfiguration()
     }
     
@@ -46,6 +49,12 @@ final class FavouriteEpisodeViewController: UIViewController {
         episodeListViewSearchViewController.navigationItem.largeTitleDisplayMode = .never
         
         navigationController?.pushViewController(episodeListViewSearchViewController, animated: true)
+    }
+    
+    private func checkInternetConnection() {
+        if reachability.connection == .unavailable {
+            showNoInternetAlert()
+        }
     }
 }
 

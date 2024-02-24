@@ -1,4 +1,5 @@
 import UIKit
+import Reachability
 
 final class EpisodeDetailViewController: UIViewController, EpisodeDetailViewModelDelegate, EpisodeDetailViewDelegate {
     func showAlert(title: String, message: String) {
@@ -13,6 +14,7 @@ final class EpisodeDetailViewController: UIViewController, EpisodeDetailViewMode
 
     private let episodeDetailViewModel: EpisodeDetailViewModel
     private lazy var episodeDetailView = EpisodeDetailView()
+    private let reachability = try! Reachability()
 
     init(url: URL?) {
         self.episodeDetailViewModel = EpisodeDetailViewModel(episodeDetailEndpointURL: url)
@@ -25,6 +27,7 @@ final class EpisodeDetailViewController: UIViewController, EpisodeDetailViewMode
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        checkInternetConnection()
         episodeDetailUISetup()
         episodeDetailViewModel.episodeDetailDelegate = self
         episodeDetailViewModel.downloadepisodeDetail()
@@ -70,5 +73,11 @@ final class EpisodeDetailViewController: UIViewController, EpisodeDetailViewMode
 
     func downloadEpisodeDetails() {
         episodeDetailView.episodeDetailConfiguration(with: episodeDetailViewModel)
+    }
+    
+    private func checkInternetConnection() {
+        if reachability.connection == .unavailable {
+            showNoInternetAlert()
+        }
     }
 }

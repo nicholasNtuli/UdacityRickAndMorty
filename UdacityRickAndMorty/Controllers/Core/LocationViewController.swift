@@ -1,12 +1,15 @@
 import UIKit
+import Reachability
 
 final class LocationViewController: UIViewController {
 
     private let locationUIView = LocationUIView()
     private let locationViewModel = LocationViewModel()
+    private let reachability = try! Reachability()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        checkInternetConnection()
         locationViewCUICnfiguration()
         locationViewViewModelConfiguration()
     }
@@ -53,6 +56,12 @@ final class LocationViewController: UIViewController {
         locationViewSearchViewController.navigationItem.largeTitleDisplayMode = .never
         
         navigationController?.pushViewController(locationViewSearchViewController, animated: true)
+    }
+    
+    private func checkInternetConnection() {
+        if reachability.connection == .unavailable {
+            showNoInternetAlert()
+        }
     }
 }
 

@@ -1,9 +1,11 @@
 import UIKit
+import Reachability
 
 final class LocationDetailViewController: UIViewController {
 
     private let locationDetailViewModel: LocationDetailViewModel
     private let locationDetailView = LocationDetailView()
+    private let reachability = try! Reachability()
 
     init(location: Location) {
         let locationDetailURL = URL(string: location.url)
@@ -17,6 +19,7 @@ final class LocationDetailViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        checkInternetConnection()
         locationDetailUISetup()
         fetchLocationDetailData()
     }
@@ -53,6 +56,12 @@ final class LocationDetailViewController: UIViewController {
     private func fetchLocationDetailData() {
         locationDetailViewModel.locationDetailDelegate = self
         locationDetailViewModel.downloadLocationData()
+    }
+    
+    private func checkInternetConnection() {
+        if reachability.connection == .unavailable {
+            showNoInternetAlert()
+        }
     }
 }
 

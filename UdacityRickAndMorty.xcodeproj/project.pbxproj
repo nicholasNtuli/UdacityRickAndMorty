@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7A2992FF2B8A2BE60012AD16 /* UIViewControllerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A2992FE2B8A2BE60012AD16 /* UIViewControllerExtension.swift */; };
+		7A2993022B8A2D420012AD16 /* Reachability in Frameworks */ = {isa = PBXBuildFile; productRef = 7A2993012B8A2D420012AD16 /* Reachability */; };
 		7A46803E2B7FA9A50041F024 /* FavouriteEpisodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A46803D2B7FA9A50041F024 /* FavouriteEpisodeViewController.swift */; };
 		7A4680492B7FB18E0041F024 /* Realm in Frameworks */ = {isa = PBXBuildFile; productRef = 7A4680482B7FB18E0041F024 /* Realm */; };
 		7A46804B2B7FB18E0041F024 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 7A46804A2B7FB18E0041F024 /* RealmSwift */; };
@@ -77,6 +79,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		7A2992FE2B8A2BE60012AD16 /* UIViewControllerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewControllerExtension.swift; sourceTree = "<group>"; };
 		7A46803D2B7FA9A50041F024 /* FavouriteEpisodeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavouriteEpisodeViewController.swift; sourceTree = "<group>"; };
 		7A4680502B7FB2260041F024 /* RealmManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealmManager.swift; sourceTree = "<group>"; };
 		830E58D02957335A009AD9D6 /* CharacterCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterCollectionViewCell.swift; sourceTree = "<group>"; };
@@ -153,6 +156,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7A46804B2B7FB18E0041F024 /* RealmSwift in Frameworks */,
+				7A2993022B8A2D420012AD16 /* Reachability in Frameworks */,
 				7A4680492B7FB18E0041F024 /* Realm in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -209,6 +213,14 @@
 				839778CC2958D97300C94AD3 /* EpisodeDetailViewController.swift */,
 			);
 			path = Episode;
+			sourceTree = "<group>";
+		};
+		7A2992FD2B8A2BB70012AD16 /* UIViewControllerExtension */ = {
+			isa = PBXGroup;
+			children = (
+				7A2992FE2B8A2BE60012AD16 /* UIViewControllerExtension.swift */,
+			);
+			path = UIViewControllerExtension;
 			sourceTree = "<group>";
 		};
 		7A46804C2B7FB1D30041F024 /* Shared */ = {
@@ -411,6 +423,7 @@
 		83D9AD082954BE58001E1C72 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				7A2992FD2B8A2BB70012AD16 /* UIViewControllerExtension */,
 				830E58D429575EBB009AD9D6 /* Other */,
 				83D9AD152954BF49001E1C72 /* Core */,
 			);
@@ -525,6 +538,7 @@
 			packageProductDependencies = (
 				7A4680482B7FB18E0041F024 /* Realm */,
 				7A46804A2B7FB18E0041F024 /* RealmSwift */,
+				7A2993012B8A2D420012AD16 /* Reachability */,
 			);
 			productName = RickAndMorty;
 			productReference = 83D9ACF12954BD61001E1C72 /* UdacityRickAndMorty.app */;
@@ -556,6 +570,7 @@
 			mainGroup = 83D9ACE82954BD60001E1C72;
 			packageReferences = (
 				7A4680472B7FB18E0041F024 /* XCRemoteSwiftPackageReference "realm-swift" */,
+				7A2993002B8A2D410012AD16 /* XCRemoteSwiftPackageReference "Reachability" */,
 			);
 			productRefGroup = 83D9ACF22954BD61001E1C72 /* Products */;
 			projectDirPath = "";
@@ -603,6 +618,7 @@
 				8342527529BCB3D900F62C27 /* TableLoadingFooterView.swift in Sources */,
 				83D9AD192954BF71001E1C72 /* LocationViewController.swift in Sources */,
 				83D9AD142954BF05001E1C72 /* Episode.swift in Sources */,
+				7A2992FF2B8A2BE60012AD16 /* UIViewControllerExtension.swift in Sources */,
 				839E94A5295CC305008D9484 /* LocationsResponse.swift in Sources */,
 				830E58E42957A429009AD9D6 /* CharacterInfoCollectionViewCell.swift in Sources */,
 				839E94A7295CC3E2008D9484 /* LocationTableViewCell.swift in Sources */,
@@ -863,6 +879,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		7A2993002B8A2D410012AD16 /* XCRemoteSwiftPackageReference "Reachability" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ashleymills/Reachability.swift";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		7A4680472B7FB18E0041F024 /* XCRemoteSwiftPackageReference "realm-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/realm/realm-swift.git";
@@ -874,6 +898,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		7A2993012B8A2D420012AD16 /* Reachability */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7A2993002B8A2D410012AD16 /* XCRemoteSwiftPackageReference "Reachability" */;
+			productName = Reachability;
+		};
 		7A4680482B7FB18E0041F024 /* Realm */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 7A4680472B7FB18E0041F024 /* XCRemoteSwiftPackageReference "realm-swift" */;

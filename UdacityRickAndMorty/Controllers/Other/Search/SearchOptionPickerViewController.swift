@@ -1,10 +1,12 @@
 import UIKit
+import Reachability
 
 final class SearchOptionPickerViewController: UIViewController {
     
     private let searchOptionPicker: SearchInputViewModel.SearchInputConstants
     private let searchOptionPickerSelectionBlock: ((String) -> Void)
     private static let searchOptionPickerReuseCellIdentifier = "searchOptionCell"
+    private let reachability = try! Reachability()
 
     private lazy var searchOptionPickerTableView: UITableView = {
         let searchOptionPickerTable = UITableView()
@@ -29,6 +31,7 @@ final class SearchOptionPickerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        checkInternetConnection()
         searchOptionPickerTableViewSetup()
     }
 
@@ -43,6 +46,12 @@ final class SearchOptionPickerViewController: UIViewController {
             searchOptionPickerTableView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
             searchOptionPickerTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
+    }
+    
+    private func checkInternetConnection() {
+        if reachability.connection == .unavailable {
+            showNoInternetAlert()
+        }
     }
 }
 

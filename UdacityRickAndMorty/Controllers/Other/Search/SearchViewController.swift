@@ -1,4 +1,5 @@
 import UIKit
+import Reachability
 
 final class SearchViewController: UIViewController {
     
@@ -6,6 +7,7 @@ final class SearchViewController: UIViewController {
     private lazy var searchingView: SearchingView = {
         return SearchingView(frame: .zero, viewModel: serachViewModel)
     }()
+    private let reachability = try! Reachability()
     
     struct SearchViewControllerConfiguration {
         enum `SearchType` {
@@ -45,6 +47,7 @@ final class SearchViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        checkInternetConnection()
         searchViewUISetup()
     }
 
@@ -81,6 +84,12 @@ final class SearchViewController: UIViewController {
             searchingView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
             searchingView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
         ])
+    }
+    
+    private func checkInternetConnection() {
+        if reachability.connection == .unavailable {
+            showNoInternetAlert()
+        }
     }
 }
 
